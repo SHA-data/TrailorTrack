@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { QrCode, Ruler, ShoppingBag, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -12,16 +13,20 @@ export default async function CustomerDashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (!user) {
+    redirect("/login?redirectTo=/app");
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("full_name")
-    .eq("id", user!.id)
+    .eq("id", user.id)
     .single();
 
   const { data: customer } = await supabase
     .from("customers")
     .select("city, qr_token")
-    .eq("user_id", user!.id)
+    .eq("user_id", user.id)
     .single();
 
   const firstName = profile?.full_name?.split(" ")[0] || "Customer";
