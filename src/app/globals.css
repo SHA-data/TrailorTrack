@@ -1,0 +1,157 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-display: var(--font-cormorant), Georgia, Cambria, "Times New Roman", Times, serif;
+
+  /* TailorTrack Forest Green Scale */
+  --color-forest-50: #f0f7f4;
+  --color-forest-100: #dbeee5;
+  --color-forest-200: #b9decb;
+  --color-forest-300: #8dc6ac;
+  --color-forest-400: #5fa88a;
+  --color-forest-500: #3f8c6f;
+  --color-forest-600: #2f6f57;
+  --color-forest-700: #265947;
+  --color-forest-800: #1f4d3a;
+  --color-forest-900: #1a4031;
+  --color-forest-950: #0e241c;
+  --color-forest-primary: #1f4d3a;
+
+  /* TailorTrack Cream Scale */
+  --color-cream-50: #fdfbf7;
+  --color-cream-100: #f7f1e3;
+  --color-cream-200: #efe4cb;
+  --color-cream-300: #e4d3ac;
+  --color-cream-400: #d7be8a;
+  --color-cream-500: #c8a86a;
+
+  /* TailorTrack Gold Scale */
+  --color-gold-50: #fcf9ee;
+  --color-gold-100: #f7f0d3;
+  --color-gold-200: #efe1a8;
+  --color-gold-300: #e4cc76;
+  --color-gold-400: #d7b54a;
+  --color-gold-500: #c9a24b;
+  --color-gold-600: #b2873c;
+  --color-gold-700: #906632;
+  --color-gold-800: #76522c;
+  --color-gold-900: #644428;
+  --color-gold-950: #3a2413;
+
+  /* TailorTrack Neutral Ink Scale */
+  --color-ink-50: #f6f7f6;
+  --color-ink-100: #e2e5e3;
+  --color-ink-200: #c4cac6;
+  --color-ink-300: #9ea7a1;
+  --color-ink-400: #78837c;
+  --color-ink-500: #5c6760;
+  --color-ink-600: #48524c;
+  --color-ink-700: #3b423e;
+  --color-ink-800: #2d322f;
+  --color-ink-900: #1a1f1d;
+  --color-ink-950: #101312;
+
+  /* shadcn UI Color mappings */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Light Mode (TailorTrack Brand: Forest Green, Cream, Gold, Warm Ink) */
+  --background: #f7f1e3;
+  --foreground: #1a1f1d;
+
+  --card: #ffffff;
+  --card-foreground: #1a1f1d;
+
+  --popover: #fdfbf7;
+  --popover-foreground: #1a1f1d;
+
+  --primary: #1f4d3a;
+  --primary-foreground: #f7f1e3;
+
+  --secondary: #efe4cb;
+  --secondary-foreground: #1f4d3a;
+
+  --muted: #ebe2cf;
+  --muted-foreground: #5c6760;
+
+  --accent: #c9a24b;
+  --accent-foreground: #101312;
+
+  --destructive: #b91c1c;
+  --destructive-foreground: #fdfbf7;
+
+  --border: #dfd6c3;
+  --input: #d6ccb7;
+  --ring: #1f4d3a;
+
+  --radius: 0.5rem;
+}
+
+/* Dark mode scaffolded for future phases */
+.dark {
+  --background: #0e1713;
+  --foreground: #f7f1e3;
+
+  --card: #14221c;
+  --card-foreground: #f7f1e3;
+
+  --popover: #14221c;
+  --popover-foreground: #f7f1e3;
+
+  --primary: #5fa88a;
+  --primary-foreground: #0e241c;
+
+  --secondary: #263930;
+  --secondary-foreground: #f7f1e3;
+
+  --muted: #212f28;
+  --muted-foreground: #9ea7a1;
+
+  --accent: #c9a24b;
+  --accent-foreground: #0e241c;
+
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fdfbf7;
+
+  --border: #2b3b33;
+  --input: #2b3b33;
+  --ring: #5fa88a;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
