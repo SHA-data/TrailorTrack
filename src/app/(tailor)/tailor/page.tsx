@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { QrCode, Users, ShoppingBag, Clock, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function TailorDashboardPage() {
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },

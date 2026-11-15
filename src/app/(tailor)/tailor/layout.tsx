@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { LayoutDashboard, QrCode, ShoppingBag, Users, Store, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/marketing/logo";
@@ -12,6 +13,7 @@ interface TailorLayoutProps {
 }
 
 export default async function TailorLayout({ children }: TailorLayoutProps) {
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },

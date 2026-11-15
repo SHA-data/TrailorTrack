@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { LogOut, ShieldCheck, Mail, UserCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { signOutAction } from "@/lib/auth/actions";
 import { ShopEditorForm } from "./shop-editor-form";
 
 export default async function TailorShopPage() {
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },

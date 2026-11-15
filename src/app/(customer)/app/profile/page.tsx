@@ -1,5 +1,6 @@
 import React from "react";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Shield, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { signOutAction } from "@/lib/auth/actions";
 import { ProfileEditorForm } from "./profile-editor-form";
 
 export default async function CustomerProfilePage() {
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },
@@ -63,7 +65,7 @@ export default async function CustomerProfilePage() {
             </span>
             <span>
               {profile?.created_at
-                ? `Joined: ${new Date(profile.created_at).toLocaleDateString()}`
+                ? `Member since ${profile.created_at.slice(0, 10)}`
                 : "Active Passport"}
             </span>
           </div>

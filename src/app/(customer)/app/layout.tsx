@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Home, Ruler, ShoppingBag, Palette, User, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/marketing/logo";
@@ -12,6 +13,7 @@ interface CustomerLayoutProps {
 }
 
 export default async function CustomerLayout({ children }: CustomerLayoutProps) {
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },
