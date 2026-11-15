@@ -12,6 +12,8 @@ interface PageProps {
   }>;
 }
 
+export const instant = false;
+
 export default async function NewMeasurementPage({ searchParams }: PageProps) {
   await connection();
   const params = await searchParams;

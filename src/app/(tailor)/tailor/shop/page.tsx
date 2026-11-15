@@ -7,6 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { signOutAction } from "@/lib/auth/actions";
 import { ShopEditorForm } from "./shop-editor-form";
 
+export const instant = false;
+
 export default async function TailorShopPage() {
   await connection();
   const supabase = await createClient();

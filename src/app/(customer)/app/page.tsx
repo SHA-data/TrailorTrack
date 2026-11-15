@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { OnboardingWizard } from "@/components/customer/onboarding-wizard";
 
+export const instant = false;
+
 export default async function CustomerDashboardPage() {
   await connection();
   const supabase = await createClient();

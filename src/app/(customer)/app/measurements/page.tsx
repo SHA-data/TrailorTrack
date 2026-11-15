@@ -10,6 +10,8 @@ import {
 } from "./measurements-client";
 import type { GarmentType, PreferredUnit } from "@/types/database";
 
+export const instant = false;
+
 export default async function MeasurementsHubPage() {
   await connection();
   const supabase = await createClient();

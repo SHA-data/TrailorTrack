@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { signOutAction } from "@/lib/auth/actions";
 import { ProfileEditorForm } from "./profile-editor-form";
 
+export const instant = false;
+
 export default async function CustomerProfilePage() {
   await connection();
   const supabase = await createClient();

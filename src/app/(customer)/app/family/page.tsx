@@ -4,6 +4,8 @@ import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { FamilyClient, type FamilyMemberItem } from "./family-client";
 
+export const instant = false;
+
 export default async function FamilyPage() {
   await connection();
   const supabase = await createClient();

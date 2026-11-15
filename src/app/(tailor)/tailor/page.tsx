@@ -15,6 +15,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+export const instant = false;
+
 export default async function TailorDashboardPage() {
   await connection();
   const supabase = await createClient();

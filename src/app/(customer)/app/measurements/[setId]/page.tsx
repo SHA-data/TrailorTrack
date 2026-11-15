@@ -10,6 +10,8 @@ interface PageProps {
   }>;
 }
 
+export const instant = false;
+
 export default async function MeasurementSetDetailPage({ params }: PageProps) {
   await connection();
   const { setId } = await params;
