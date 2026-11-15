@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const instant = false;
@@ -36,9 +37,25 @@ export default async function TailorDashboardPage() {
 
   const { data: shop } = await supabase
     .from("tailor_shops")
-    .select("shop_name, city, address, phone")
+    .select("id, shop_name, city, address, phone")
     .eq("owner_id", user.id)
     .maybeSingle();
+
+  // Fetch real counts via RPC
+  let activeClientsCount = 0;
+  let pendingRequestsCount = 0;
+
+  if (shop?.id) {
+    const { data: clientsRaw } = await supabase.rpc("list_my_consented_customers");
+    activeClientsCount = (clientsRaw || []).length;
+
+    const { count } = await supabase
+      .from("consents")
+      .select("id", { count: "exact", head: true })
+      .eq("shop_id", shop.id)
+      .eq("status", "pending");
+    pendingRequestsCount = count || 0;
+  }
 
   const shopDisplayName = shop?.shop_name || "Your Tailor Shop";
   const tailorName = profile?.full_name || "Master Tailor";
@@ -66,6 +83,37 @@ export default async function TailorDashboardPage() {
             Scan Customer QR
           </Link>
         </Button>
+      </div>
+
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="border-border bg-card p-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground text-xs font-medium">Active Clients</span>
+            <Badge variant="outline" className="text-xs">
+              Passport
+            </Badge>
+          </div>
+          <p className="text-foreground mt-2 font-serif text-3xl font-bold">{activeClientsCount}</p>
+          <Button asChild variant="link" size="sm" className="text-primary mt-1 h-auto p-0 text-xs">
+            <Link href="/tailor/customers">View active clients &rarr;</Link>
+          </Button>
+        </Card>
+
+        <Card className="border-border bg-card p-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground text-xs font-medium">Pending Requests</span>
+            {pendingRequestsCount > 0 && (
+              <Badge className="bg-accent text-accent-foreground text-[10px]">Action</Badge>
+            )}
+          </div>
+          <p className="text-foreground mt-2 font-serif text-3xl font-bold">
+            {pendingRequestsCount}
+          </p>
+          <Button asChild variant="link" size="sm" className="text-primary mt-1 h-auto p-0 text-xs">
+            <Link href="/tailor/customers">Review approvals &rarr;</Link>
+          </Button>
+        </Card>
       </div>
 
       {/* Getting Started Checklist */}
@@ -115,17 +163,23 @@ export default async function TailorDashboardPage() {
             <div className="border-border/70 bg-background/50 flex flex-col justify-between rounded-xl border p-4">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <CircleDashed className="text-muted-foreground h-4 w-4 shrink-0" />
+                  {activeClientsCount > 0 ? (
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                  ) : (
+                    <CircleDashed className="text-muted-foreground h-4 w-4 shrink-0" />
+                  )}
                   <span className="text-foreground text-xs font-semibold">Digital QR Intake</span>
                 </div>
                 <p className="text-muted-foreground text-[11px] leading-relaxed">
-                  Direct camera scanner for instant customer passport import upon approval.
+                  {activeClientsCount > 0
+                    ? `${activeClientsCount} client passport${activeClientsCount === 1 ? "" : "s"} linked.`
+                    : "Direct camera scanner for instant customer passport import."}
                 </p>
               </div>
               <Button asChild variant="outline" size="sm" className="mt-3 w-full text-xs">
                 <Link href="/tailor/scan">
                   <QrCode className="mr-1 h-3.5 w-3.5" />
-                  Intake Scanner
+                  {activeClientsCount > 0 ? "Scan Another" : "Intake Scanner"}
                 </Link>
               </Button>
             </div>

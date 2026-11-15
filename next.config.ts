@@ -17,6 +17,40 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+        ],
+      },
+      {
+        source: "/t/:path*",
+        headers: [
+          {
+            key: "Referrer-Policy",
+            value: "no-referrer",
+          },
+          {
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate, max-age=0",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -1,48 +1,25 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { QrCode, Sparkles, ArrowLeft, ShieldCheck } from "lucide-react";
+import React from "react";
+import { redirect } from "next/navigation";
+import { connection } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { ScannerClient } from "./scanner-client";
 
-export default function TailorScanPlaceholderPage() {
+export const instant = false;
+
+export default async function TailorScanPage() {
+  await connection();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login?redirectTo=/tailor/scan");
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" asChild>
-          <Link
-            href="/tailor"
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Dashboard
-          </Link>
-        </Button>
-      </div>
-
-      <div className="border-border/80 bg-card/40 flex flex-col items-center justify-center rounded-2xl border border-dashed p-12 text-center">
-        <div className="bg-primary/10 text-primary mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
-          <QrCode className="h-7 w-7" />
-        </div>
-        <div className="bg-accent/15 text-accent-700 dark:text-accent-400 mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium">
-          <Sparkles className="h-3 w-3" />
-          Coming soon
-        </div>
-        <h2 className="text-foreground font-serif text-2xl font-medium tracking-tight">
-          QR Passport Scanner
-        </h2>
-        <p className="text-muted-foreground mt-2 max-w-md text-sm leading-relaxed">
-          Scan a customer&apos;s digital passport directly using your mobile or desktop camera. Upon
-          customer consent approval, full biometric-grade measurements for Kameez, Kurta, and
-          Trouser fit will import instantly into your active intake sheet.
-        </p>
-        <div className="text-muted-foreground mt-4 flex items-center gap-2 text-xs">
-          <ShieldCheck className="text-accent h-4 w-4" />
-          <span>Zero paper registers • Zero re-measurement disputes</span>
-        </div>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/tailor">Return to Overview</Link>
-          </Button>
-        </div>
-      </div>
+    <div className="container max-w-2xl space-y-6 py-6 md:py-8">
+      <ScannerClient />
     </div>
   );
 }

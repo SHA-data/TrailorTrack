@@ -161,14 +161,17 @@ export default async function CustomerDashboardPage() {
           </div>
 
           {/* QR Code Box */}
-          <div className="bg-primary border-accent/30 w-44 shrink-0 space-y-2 rounded-2xl border p-4 text-center text-[#f7f1e3] shadow-md">
-            <div className="bg-card/90 text-primary mx-auto flex size-24 items-center justify-center rounded-xl p-2">
+          <Link
+            href="/app/passport"
+            className="group bg-primary border-accent/30 hover:border-accent w-44 shrink-0 space-y-2 rounded-2xl border p-4 text-center text-[#f7f1e3] shadow-md transition-all hover:shadow-lg"
+          >
+            <div className="bg-card/90 text-primary mx-auto flex size-24 items-center justify-center rounded-xl p-2 transition-transform group-hover:scale-105">
               <QrCode className="text-primary size-16" />
             </div>
-            <div className="text-accent font-mono text-[10px] font-semibold tracking-widest uppercase">
-              {customer?.qr_token ? "Ready to Scan" : "Active QR"}
+            <div className="text-accent font-mono text-[10px] font-semibold tracking-widest uppercase group-hover:underline">
+              Open Passport QR &rarr;
             </div>
-          </div>
+          </Link>
         </div>
       </Card>
 

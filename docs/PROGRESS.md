@@ -171,7 +171,6 @@
 
 ---
 
-
 ### 2. How to Run & Verify
 
 ```bash
@@ -193,16 +192,49 @@ npm run build
 
 ---
 
-### 3. Checklist for Phase 3: Measurements Passport & Family Profiles
+## Phase 4: Customer QR Passport, Tailor Scanner & Consent Handshake (Completed)
 
-- [ ] Create database migration for `measurements` table:
-  - Garment types (Shalwar Kameez, Kurta, Waistcoat, Sherwani, Trouser)
-  - Key measurements (Kameez length, chest, waist, daman, shoulder/teera, sleeve, collar, shalwar length, paicha)
-  - Fit preferences (Slim, Regular, Loose/Traditional)
-  - Measurement unit support (Inches with fractional 1/8", 1/4", 1/2", 3/4" or Centimeters)
-- [ ] Create `profiles_family` or sub-profile support for managing household members (Self, Father, Brother, Son)
-- [ ] Implement Customer Measurements Management UI in `/app/measurements`:
-  - Visual measurement input cards with anatomical guide diagrams for Pakistani garments
-  - Add, edit, archive measurement profiles
-- [ ] Live QR Code Passport generation with rotating cryptographic token
-- [ ] Unit & integration tests for measurement calculations and validation
+### 1. What Was Built
+
+- **Security & Privacy Architecture**:
+  - Zero-direct discovery queries by tailors on `customers`, `profiles`, or `consents`.
+  - All tailor lookups, consent dispatches, and client fetching run through 10 `SECURITY DEFINER` RPCs with `search_path = ''`.
+  - Scans expose only masked names (`"Ahmed K."`) and relationship status; never expose customer ID, phone, city, or measurements.
+  - Rate limiting: 15 failed lookups per hour triggers automatic throttle lockout in `lookup_passport`.
+  - 3-day privacy cooldown enforced after a customer declines a shop.
+  - Transparent access audit log: every profile/measurement view by a tailor writes to `access_log` (with a 30-minute anti-spam de-duplication window).
+- **Database Architecture (`supabase/migrations/0003_access_flow.sql`)**:
+  - `consents`: Added `requested_scopes text[]` and `responded_at timestamptz`.
+  - Trigger `trg_consents_state_machine`: Strictly enforces `pending -> active | declined`, `active -> revoked`, terminal states, scope subset validation, and 365-day max expiry. Direct client updates locked down.
+  - `access_log`: Immutable table with RLS enabled; customers can view their own rows; direct insert/update/delete blocked.
+  - `qr_lookup_attempts`: Internal throttling table for rate limiting.
+  - 10 SECURITY DEFINER RPCs: `lookup_passport`, `request_access`, `respond_to_consent`, `revoke_consent`, `my_consent_status`, `list_my_consented_customers`, `get_consented_customer`, `log_measurement_view`, `list_pending_requests`, `list_my_access`.
+- **RLS Verification Test Suite (`supabase/tests/rls_checks_phase4.sql`)**:
+  - 11 comprehensive automated assertions verifying masking, throttling, cooldowns, state machine boundaries, isolation, audit logging, scope enforcement, token rotation independence, and anon lockout.
+- **Dependencies**:
+  - `qrcode` (+ `@types/qrcode`) for server-side vector SVG generation.
+  - `qr-scanner` (Nimiq, MIT) for in-browser camera scanning with back-camera priority, flashlight toggle, and clean unmounting.
+  - `html-to-image` for 3x resolution PNG passport card download.
+- **Customer Screens**:
+  - 5-item mobile bottom navigation with elevated center "My QR" passport button.
+  - `/app/passport`: Forest green + gold passport card, SVG QR, Save as PNG, Print (credit card size 85.6 x 54 mm via print CSS), WhatsApp share (`wa.me/?text=...`), Copy link, and Reset QR modal dialog.
+  - `/app/access`: Requests, Active, and Activity audit log tabs with 20s auto-refresh + tab focus.
+- **Tailor Screens & Public Gateway**:
+  - `/tailor/scan`: Camera scanner with target overlay, flashlight toggle, and manual link/token fallback.
+  - `/t/[token]`: Public gateway handling Logged-out, Customer, and Tailor states (request access, live 4s polling while waiting for customer approval, auto-redirect on approval).
+  - `/tailor/customers`: Active (with search bar and $\le 3$-day expiry warning) and Pending approval tabs.
+  - `/tailor/customers/[customerId]`: Consented client view with read-only measurements and family tabs, invoking `log_measurement_view`.
+  - Updated tailor dashboard with live RPC client counts and checklist scan connection.
+
+---
+
+### 2. Checklist for Phase 5: Order Creation & Order Lifecycle Management
+
+- [ ] Database migration for orders:
+  - `orders` table (customer_id, shop_id, garment_type, measurement_snapshot jsonb, fabric_notes, delivery_date, status, total_price, advance_paid)
+  - `order_status_history` table (order_id, from_status, to_status, notes, changed_by, created_at)
+  - Milestones: `received` -> `cutting` -> `stitching` -> `trial_fitting` -> `ready` -> `delivered`
+- [ ] Tailor order creation form with measurement snapshot selection
+- [ ] Live milestone order tracking screen for customers and tailors
+- [ ] WhatsApp status update notifications
+

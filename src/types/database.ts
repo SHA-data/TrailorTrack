@@ -7,6 +7,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type UserRole = "customer" | "tailor";
 export type ConsentStatus = "pending" | "active" | "revoked" | "declined";
 export type ConsentScope = "measurements" | "orders" | "saved_looks";
+export type AccessAction = "viewed_profile" | "viewed_measurements" | "viewed_family";
 
 export type FitCategory = "men" | "women" | "boys" | "girls";
 export type PreferredUnit = "in" | "cm";
@@ -236,33 +237,39 @@ export interface Database {
           id: string;
           customer_id: string;
           shop_id: string;
+          requested_scopes: ConsentScope[];
           scopes: ConsentScope[];
           status: ConsentStatus;
           granted_at: string | null;
           revoked_at: string | null;
           expires_at: string | null;
+          responded_at: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           customer_id: string;
           shop_id: string;
+          requested_scopes?: ConsentScope[];
           scopes?: ConsentScope[];
           status?: ConsentStatus;
           granted_at?: string | null;
           revoked_at?: string | null;
           expires_at?: string | null;
+          responded_at?: string | null;
           created_at?: string;
         };
         Update: {
           id?: string;
           customer_id?: string;
           shop_id?: string;
+          requested_scopes?: ConsentScope[];
           scopes?: ConsentScope[];
           status?: ConsentStatus;
           granted_at?: string | null;
           revoked_at?: string | null;
           expires_at?: string | null;
+          responded_at?: string | null;
           created_at?: string;
         };
         Relationships: [
@@ -275,6 +282,74 @@ export interface Database {
           },
           {
             foreignKeyName: "consents_shop_id_fkey";
+            columns: ["shop_id"];
+            isOneToOne: false;
+            referencedRelation: "tailor_shops";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      access_log: {
+        Row: {
+          id: string;
+          customer_id: string;
+          shop_id: string;
+          action: AccessAction;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id: string;
+          shop_id: string;
+          action: AccessAction;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string;
+          shop_id?: string;
+          action?: AccessAction;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "access_log_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "access_log_shop_id_fkey";
+            columns: ["shop_id"];
+            isOneToOne: false;
+            referencedRelation: "tailor_shops";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      qr_lookup_attempts: {
+        Row: {
+          id: string;
+          shop_id: string;
+          succeeded: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          shop_id: string;
+          succeeded: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          shop_id?: string;
+          succeeded?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "qr_lookup_attempts_shop_id_fkey";
             columns: ["shop_id"];
             isOneToOne: false;
             referencedRelation: "tailor_shops";
@@ -306,6 +381,106 @@ export interface Database {
           p_scope: string;
         };
         Returns: boolean;
+      };
+      lookup_passport: {
+        Args: { p_token: string };
+        Returns: {
+          masked_name: string;
+          status: "none" | "pending" | "active" | "expired" | "declined" | "revoked";
+          consent_id: string | null;
+          cooldown_until: string | null;
+        } | null;
+      };
+      request_access: {
+        Args: {
+          p_token: string;
+          p_scopes: string[];
+        };
+        Returns: string;
+      };
+      respond_to_consent: {
+        Args: {
+          p_consent_id: string;
+          p_decision: "approve" | "decline";
+          p_scopes: string[] | null;
+          p_duration_days?: number;
+        };
+        Returns: boolean;
+      };
+      revoke_consent: {
+        Args: { p_consent_id: string };
+        Returns: boolean;
+      };
+      my_consent_status: {
+        Args: { p_consent_id: string };
+        Returns: {
+          id: string;
+          status: ConsentStatus;
+          scopes: ConsentScope[];
+          expires_at: string | null;
+          customer_id: string | null;
+        } | null;
+      };
+      list_my_consented_customers: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          customer_id: string;
+          full_name: string;
+          phone: string | null;
+          city: string | null;
+          fit_category: FitCategory | null;
+          scopes: ConsentScope[];
+          expires_at: string;
+        }[];
+      };
+      get_consented_customer: {
+        Args: { p_customer_id: string };
+        Returns: {
+          customer_id: string;
+          full_name: string;
+          phone: string | null;
+          city: string | null;
+          fit_category: FitCategory | null;
+          scopes: ConsentScope[];
+          expires_at: string;
+        };
+      };
+      log_measurement_view: {
+        Args: {
+          p_customer_id: string;
+          p_what: "viewed_measurements" | "viewed_family";
+        };
+        Returns: boolean;
+      };
+      list_pending_requests: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          consent_id: string;
+          shop_id: string;
+          shop_name: string;
+          shop_city: string | null;
+          shop_address: string | null;
+          shop_phone: string | null;
+          requested_scopes: ConsentScope[];
+          created_at: string;
+        }[];
+      };
+      list_my_access: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          consent_id: string;
+          shop_id: string;
+          shop_name: string;
+          shop_city: string | null;
+          shop_phone: string | null;
+          status: "active" | "expired" | "declined" | "revoked";
+          scopes: ConsentScope[];
+          requested_scopes: ConsentScope[];
+          granted_at: string | null;
+          expires_at: string | null;
+          revoked_at: string | null;
+          responded_at: string | null;
+        }[];
       };
     };
     Enums: {
