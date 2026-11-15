@@ -155,6 +155,9 @@ begin
 
   v_new_token := encode(extensions.gen_random_bytes(16), 'hex');
 
+  -- Mark transaction context so the immutability trigger allows rotation
+  perform set_config('tailortrack.rotating_qr', 'true', true);
+
   update public.customers
   set qr_token = v_new_token,
       qr_token_rotated_at = now()
@@ -196,9 +199,8 @@ begin
       raise exception 'Cannot modify immutable column customers.user_id';
     end if;
     -- Normal updates cannot modify qr_token directly (must use rotate_my_qr_token)
-    if new.qr_token <> old.qr_token and (current_user = 'authenticated' or session_user = 'authenticated') then
-      -- Allow rotation only if invoked through rotate_my_qr_token (which sets qr_token_rotated_at)
-      if new.qr_token_rotated_at is null or new.qr_token_rotated_at = old.qr_token_rotated_at then
+    if new.qr_token <> old.qr_token then
+      if coalesce(current_setting('tailortrack.rotating_qr', true), 'false') <> 'true' then
         raise exception 'qr_token cannot be updated directly. Call rotate_my_qr_token()';
       end if;
     end if;
