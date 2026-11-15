@@ -36,33 +36,56 @@ begin
 
   delete from auth.users where id in (v_user_a, v_user_b, v_tailor, v_tailor_b);
 
-  insert into auth.users (id, email) values
-    (v_user_a, 'customer.a@tailortrack.pk'),
-    (v_user_b, 'customer.b@tailortrack.pk'),
-    (v_tailor, 'master.tailor@tailortrack.pk'),
-    (v_tailor_b, 'second.tailor@tailortrack.pk');
+  -- 1. Create User A (Customer)
+  insert into auth.users (id, email, raw_user_meta_data, role, aud)
+  values (
+    v_user_a,
+    'customer.a@tailortrack.pk',
+    jsonb_build_object('role', 'customer', 'full_name', 'Tariq Mahmood', 'city', 'Lahore', 'phone', '+923001111111'),
+    'authenticated',
+    'authenticated'
+  );
 
-  insert into public.profiles (id, full_name, role, phone) values
-    (v_user_a, 'Tariq Mahmood', 'customer', '+923001111111'),
-    (v_user_b, 'Farhan Saeed', 'customer', '+923002222222'),
-    (v_tailor, 'Ustad Rafiq Master', 'tailor', '+923003333333'),
-    (v_tailor_b, 'Karachi Master Shop', 'tailor', '+923004444444');
+  -- 2. Create User B (Customer)
+  insert into auth.users (id, email, raw_user_meta_data, role, aud)
+  values (
+    v_user_b,
+    'customer.b@tailortrack.pk',
+    jsonb_build_object('role', 'customer', 'full_name', 'Farhan Saeed', 'city', 'Karachi', 'phone', '+923002222222'),
+    'authenticated',
+    'authenticated'
+  );
 
-  insert into public.customers (user_id, city, fit_category, preferred_unit) values
-    (v_user_a, 'Lahore', 'men', 'in')
-    returning id, qr_token into v_customer_a_id, v_token_a;
+  -- 3. Create Tailor A
+  insert into auth.users (id, email, raw_user_meta_data, role, aud)
+  values (
+    v_tailor,
+    'master.tailor@tailortrack.pk',
+    jsonb_build_object('role', 'tailor', 'full_name', 'Ustad Rafiq Master', 'shop_name', 'Rafiq Sons Bespoke', 'city', 'Lahore', 'address', 'Anarkali Bazaar', 'phone', '+923003333333'),
+    'authenticated',
+    'authenticated'
+  );
 
-  insert into public.customers (user_id, city, fit_category, preferred_unit) values
-    (v_user_b, 'Karachi', 'men', 'in')
-    returning id, qr_token into v_customer_b_id, v_token_b;
+  -- 4. Create Tailor B
+  insert into auth.users (id, email, raw_user_meta_data, role, aud)
+  values (
+    v_tailor_b,
+    'second.tailor@tailortrack.pk',
+    jsonb_build_object('role', 'tailor', 'full_name', 'Karachi Master Shop', 'shop_name', 'Gulshan Royal Tailors', 'city', 'Karachi', 'address', 'Gulshan-e-Iqbal', 'phone', '+923004444444'),
+    'authenticated',
+    'authenticated'
+  );
 
-  insert into public.tailor_shops (owner_id, shop_name, city, address, phone) values
-    (v_tailor, 'Rafiq Sons Bespoke', 'Lahore', 'Anarkali Bazaar', '+923003333333')
-    returning id into v_shop_id;
+  -- Update customer preferences populated after onboarding
+  update public.customers
+  set fit_category = 'men', preferred_unit = 'in'
+  where user_id in (v_user_a, v_user_b);
 
-  insert into public.tailor_shops (owner_id, shop_name, city, address, phone) values
-    (v_tailor_b, 'Gulshan Royal Tailors', 'Karachi', 'Gulshan-e-Iqbal', '+923004444444')
-    returning id into v_shop_b_id;
+  -- Fetch generated IDs and tokens
+  select id, qr_token into v_customer_a_id, v_token_a from public.customers where user_id = v_user_a;
+  select id, qr_token into v_customer_b_id, v_token_b from public.customers where user_id = v_user_b;
+  select id into v_shop_id from public.tailor_shops where owner_id = v_tailor;
+  select id into v_shop_b_id from public.tailor_shops where owner_id = v_tailor_b;
 
   -- Insert a measurement set for Customer A to verify scope enforcement
   insert into public.measurement_sets (customer_id, garment_type, values, source)
@@ -73,6 +96,7 @@ begin
   -- ----------------------------------------------------------------------------
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text)::text, true);
 
   -- 1.1 Valid token lookup
   v_lookup_result := public.lookup_passport(v_token_a);
@@ -122,6 +146,7 @@ begin
   -- Customer or anon cannot call lookup_passport
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_user_a::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_a::text)::text, true);
   v_exception_caught := false;
   begin
     v_lookup_result := public.lookup_passport(v_token_b);
@@ -140,6 +165,7 @@ begin
   -- ----------------------------------------------------------------------------
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text)::text, true);
 
   -- Tailor requests access to Customer A
   v_consent_id := public.request_access(v_token_a, array['measurements', 'orders']);
@@ -169,6 +195,7 @@ begin
   -- Customer A declines request
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_user_a::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_a::text)::text, true);
 
   v_bool := public.respond_to_consent(v_consent_id, 'decline', null, 30);
   if v_bool = true then
@@ -195,6 +222,7 @@ begin
   -- Tailor re-requesting within 3 days is blocked by decline cooldown
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text)::text, true);
   v_exception_caught := false;
   begin
     perform public.request_access(v_token_a, array['measurements']);
@@ -217,11 +245,13 @@ begin
   -- Tailor creates new request with scopes ['measurements', 'orders']
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text)::text, true);
   v_consent_id := public.request_access(v_token_a, array['measurements', 'orders']);
 
   -- Customer A attempts to approve with invalid scope (not requested: 'saved_looks')
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_user_a::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_a::text)::text, true);
   v_exception_caught := false;
   begin
     perform public.respond_to_consent(v_consent_id, 'approve', array['saved_looks'], 30);
@@ -262,6 +292,7 @@ begin
   -- ----------------------------------------------------------------------------
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_user_b::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_b::text)::text, true);
 
   v_exception_caught := false;
   begin
@@ -281,6 +312,7 @@ begin
   -- ----------------------------------------------------------------------------
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text)::text, true);
 
   v_exception_caught := false;
   begin
@@ -333,6 +365,7 @@ begin
   -- Customer A checks their access log
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_user_a::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_a::text)::text, true);
 
   select count(*) into v_count
   from public.access_log
@@ -364,6 +397,7 @@ begin
   -- Customer B cannot read Customer A's access log
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_user_b::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_b::text)::text, true);
 
   select count(*) into v_count
   from public.access_log
@@ -380,6 +414,7 @@ begin
   -- ----------------------------------------------------------------------------
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text)::text, true);
 
   -- Tailor logs measurement view
   v_bool := public.log_measurement_view(v_customer_a_id, 'viewed_measurements');
@@ -403,6 +438,7 @@ begin
   -- Tailor B (no consent) reads 0 measurement sets
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor_b::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor_b::text)::text, true);
 
   select count(*) into v_count
   from public.measurement_sets
@@ -419,6 +455,7 @@ begin
   -- ----------------------------------------------------------------------------
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_user_a::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_a::text)::text, true);
 
   -- Customer A rotates QR token
   perform public.rotate_my_qr_token();
@@ -426,6 +463,7 @@ begin
   -- Tailor attempts to lookup using old token -> returns null
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text)::text, true);
 
   v_lookup_result := public.lookup_passport(v_token_a);
   if v_lookup_result is null then
@@ -445,11 +483,13 @@ begin
   -- Customer revokes consent
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_user_a::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_a::text)::text, true);
   perform public.revoke_consent(v_consent_id);
 
   -- Tailor now reads 0 customers from list_my_consented_customers
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text)::text, true);
   select count(*) into v_count from public.list_my_consented_customers();
   if v_count = 0 then
     raise notice 'CHECK 10.3: PASS - Revoked consent immediately removes tailor access';
@@ -462,6 +502,7 @@ begin
   -- ----------------------------------------------------------------------------
   perform set_config('role', 'anon', true);
   perform set_config('request.jwt.claim.sub', '', true);
+  perform set_config('request.jwt.claims', '{}', true);
 
   v_exception_caught := false;
   begin
