@@ -236,11 +236,13 @@ begin
     raise exception 'CHECK 4.3: FAIL - Cooldown was bypassed!';
   end if;
 
-  -- Fast-forward the declined consent to 4 days ago to test new request and approval
+  -- Fast-forward by replacing the declined consent with one responded 4 days ago.
+  -- Since the state machine strictly prohibits UPDATE on declined records (terminal state),
+  -- we delete and re-insert the historical row with responded_at = now() - interval '4 days'.
   perform set_config('role', 'postgres', true);
-  update public.consents
-  set responded_at = now() - interval '4 days'
-  where id = v_consent_id;
+  delete from public.consents where id = v_consent_id;
+  insert into public.consents (id, customer_id, shop_id, status, requested_scopes, scopes, responded_at)
+  values (v_consent_id, v_customer_a_id, v_shop_id, 'declined', array['measurements', 'orders'], array['measurements', 'orders'], now() - interval '4 days');
 
   -- Tailor creates new request with scopes ['measurements', 'orders']
   perform set_config('role', 'authenticated', true);
