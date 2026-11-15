@@ -265,17 +265,24 @@ begin
     raise exception 'CHECK 6.2: FAIL - Tailor with NO consent read % sets!', v_count;
   end if;
 
-  -- 6.2 Create active consent for measurements
-  insert into public.consents (customer_id, shop_id, scopes, status, granted_at, expires_at)
+  -- 6.2 Tailor requests pending consent for measurements
+  insert into public.consents (customer_id, shop_id, scopes, status)
   values (
     v_customer_a_id,
     v_shop_id,
     array['measurements'],
-    'active',
-    now(),
-    now() + interval '30 days'
+    'pending'
   )
   returning id into v_consent_id;
+
+  -- Customer A approves the consent
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_a::text)::text, true);
+  update public.consents
+  set status = 'active', granted_at = now(), expires_at = now() + interval '30 days'
+  where id = v_consent_id;
+
+  -- Switch back to tailor to verify active consent access
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text)::text, true);
 
   -- Tailor now selects with active consent
   select count(*) into v_count from public.family_members where customer_id = v_customer_a_id;
@@ -292,11 +299,14 @@ begin
     raise exception 'CHECK 6.4: FAIL - Tailor with ACTIVE consent could not read sets!';
   end if;
 
-  -- 6.3 Revoked consent -> reads 0
+  -- 6.3 Customer A revokes consent
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_a::text)::text, true);
   update public.consents
   set status = 'revoked', revoked_at = now()
   where id = v_consent_id;
 
+  -- Switch back to tailor to verify revoked access
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text)::text, true);
   select count(*) into v_count from public.measurement_sets where customer_id = v_customer_a_id;
   if v_count = 0 then
     raise notice 'CHECK 6.5: PASS - Tailor reads 0 sets when consent is REVOKED';
