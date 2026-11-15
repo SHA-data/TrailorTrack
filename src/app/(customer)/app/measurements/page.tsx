@@ -1,43 +1,120 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Ruler, Sparkles, ArrowLeft } from "lucide-react";
+import React from "react";
+import { redirect } from "next/navigation";
+import { connection } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { formatMeasurement } from "@/lib/measurements/units";
+import {
+  MeasurementsClient,
+  type PersonOption,
+  type LatestSetSummary,
+} from "./measurements-client";
+import type { GarmentType, PreferredUnit } from "@/types/database";
 
-export default function MeasurementsPlaceholderPage() {
+export default async function MeasurementsHubPage() {
+  await connection();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login?redirectTo=/app/measurements");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .single();
+
+  const { data: customer } = await supabase
+    .from("customers")
+    .select("id, fit_category, preferred_unit")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!customer) {
+    redirect("/app");
+  }
+
+  // Fetch family members
+  const { data: familyMembers } = await supabase
+    .from("family_members")
+    .select("id, full_name, relation, fit_category")
+    .eq("customer_id", customer.id)
+    .order("created_at", { ascending: true });
+
+  // Build person list: "Me" first, then family members
+  const people: PersonOption[] = [
+    {
+      id: "me",
+      name: profile?.full_name ? `${profile.full_name.split(" ")[0]} (Me)` : "Me",
+      fitCategory: customer.fit_category || "men",
+    },
+    ...(familyMembers || []).map((m) => ({
+      id: m.id,
+      name: m.full_name,
+      relation: m.relation,
+      fitCategory: m.fit_category,
+    })),
+  ];
+
+  // Fetch all measurement sets ordered by created_at desc
+  const { data: allSets } = await supabase
+    .from("measurement_sets")
+    .select("id, family_member_id, garment_type, values, fit_preference, taken_on, created_at")
+    .eq("customer_id", customer.id)
+    .order("created_at", { ascending: false });
+
+  const preferredUnit: PreferredUnit = customer.preferred_unit || "in";
+
+  // Group latest sets by personKey ('me' or family_member_id) and garmentType
+  const latestSetsByPersonAndGarment: Record<string, Record<string, LatestSetSummary>> = {};
+  const historyCounts: Record<string, Record<string, number>> = {};
+
+  (allSets || []).forEach((set) => {
+    const personKey = set.family_member_id || "me";
+    const garmentKey = set.garment_type;
+
+    if (!historyCounts[personKey]) historyCounts[personKey] = {};
+    historyCounts[personKey][garmentKey] = (historyCounts[personKey][garmentKey] || 0) + 1;
+
+    if (!latestSetsByPersonAndGarment[personKey]) {
+      latestSetsByPersonAndGarment[personKey] = {};
+    }
+
+    // Since sets are ordered desc, the first time we see a garment for a person, it is the latest
+    if (!latestSetsByPersonAndGarment[personKey][garmentKey]) {
+      const vals = (set.values as Record<string, number>) || {};
+      const keyValues = Object.entries(vals).map(([k, numVal]) => ({
+        label: k.charAt(0).toUpperCase() + k.slice(1),
+        valueFormatted: formatMeasurement(numVal, preferredUnit),
+      }));
+
+      latestSetsByPersonAndGarment[personKey][garmentKey] = {
+        id: set.id,
+        garmentType: set.garment_type as GarmentType,
+        fitPreference: set.fit_preference,
+        takenOn: set.taken_on,
+        keyValues,
+        historyCount: 1, // Will be updated below
+      };
+    }
+  });
+
+  // Assign total history counts
+  Object.keys(latestSetsByPersonAndGarment).forEach((personKey) => {
+    Object.keys(latestSetsByPersonAndGarment[personKey]).forEach((garmentKey) => {
+      latestSetsByPersonAndGarment[personKey][garmentKey].historyCount =
+        historyCounts[personKey]?.[garmentKey] || 1;
+    });
+  });
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" asChild>
-          <Link
-            href="/app"
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Dashboard
-          </Link>
-        </Button>
-      </div>
-
-      <div className="border-border/80 bg-card/40 flex flex-col items-center justify-center rounded-2xl border border-dashed p-12 text-center">
-        <div className="bg-primary/10 text-primary mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
-          <Ruler className="h-7 w-7" />
-        </div>
-        <div className="bg-gold/15 text-gold-700 dark:text-gold-400 mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium">
-          <Sparkles className="h-3 w-3" />
-          Coming soon
-        </div>
-        <h2 className="text-foreground font-serif text-2xl font-medium tracking-tight">
-          Digital Measurement Passport
-        </h2>
-        <p className="text-muted-foreground mt-2 max-w-md text-sm leading-relaxed">
-          Store precision tailored measurements for Shalwar Kameez, Kurtas, Waistcoats, and
-          Sherwanis. Save once and carry them with your secure QR passport to any tailor.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/app">Return to Overview</Link>
-          </Button>
-        </div>
-      </div>
-    </div>
+    <MeasurementsClient
+      people={people}
+      preferredUnit={preferredUnit}
+      latestSetsByPersonAndGarment={latestSetsByPersonAndGarment}
+    />
   );
 }

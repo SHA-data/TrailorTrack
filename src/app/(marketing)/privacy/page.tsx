@@ -55,8 +55,8 @@ export default function PrivacyPage() {
       </div>
 
       <div className="bg-muted/60 border-border text-muted-foreground rounded-xl border p-4 text-center font-sans text-xs">
-        Note: This is a placeholder policy for Phase 1. Final legal disclosures will be verified
-        with counsel prior to public launch.
+        Note: This is a placeholder privacy overview. Official legal disclosures are prepared for
+        general preview.
       </div>
     </main>
   );

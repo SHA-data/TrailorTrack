@@ -55,8 +55,8 @@ export default function TermsPage() {
       </div>
 
       <div className="bg-muted/60 border-border text-muted-foreground rounded-xl border p-4 text-center font-sans text-xs">
-        Note: This is a placeholder agreement for Phase 1. Complete terms will be published in Phase
-        2 alongside user account registration.
+        Note: This is a placeholder agreement preview. Official terms of service govern user account
+        registration and tailoring operations.
       </div>
     </main>
   );

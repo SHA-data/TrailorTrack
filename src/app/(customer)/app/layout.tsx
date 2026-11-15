@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { Home, Ruler, ShoppingBag, Palette, User, ShieldCheck } from "lucide-react";
+import { Home, Ruler, Users, ShoppingBag, Palette, User, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/marketing/logo";
 
@@ -36,7 +36,8 @@ export default async function CustomerLayout({ children }: CustomerLayoutProps) 
 
   const navItems = [
     { label: "Home", href: "/app", icon: Home },
-    { label: "Measurements", href: "/app/measurements", icon: Ruler },
+    { label: "Passport", href: "/app/measurements", icon: Ruler },
+    { label: "Family", href: "/app/family", icon: Users },
     { label: "Orders", href: "/app/orders", icon: ShoppingBag },
     { label: "Studio", href: "/app/studio", icon: Palette },
     { label: "Profile", href: "/app/profile", icon: User },

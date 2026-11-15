@@ -99,6 +99,79 @@
 
 ---
 
+## Phase 3: Customer Profile Completion, Family Profiles & Versioned Measurement Passport (Completed)
+
+### 1. What Was Built
+
+- **Cleanup from Phase 2**:
+  - Removed all developer-facing "Phase X" strings from `privacy/page.tsx`, `terms/page.tsx`, and dashboards.
+  - Eliminated hardcoded placeholder numbers and metrics (`0/0/0`).
+  - Partner tailor dashboard now features a clean "Getting Started as a Partner Tailor" checklist with live shop profile completeness detection.
+  - Customer overview dashboard now displays real counts (total measurements, family members, active orders) and a dynamic profile completion progress bar (0–100%).
+- **Database Architecture (`supabase/migrations/0002_measurements.sql`)**:
+  - `customers`: Added `fit_category text check (fit_category in ('men','women','boys','girls'))` and `preferred_unit text not null default 'in' check (preferred_unit in ('in','cm'))`.
+  - `family_members`: `id`, `customer_id references customers(id)`, `full_name`, `relation check in ('spouse','son','daughter','father','mother','brother','sister','other')`, `fit_category`, `created_at`, `updated_at`, with `unique(id, customer_id)`.
+  - `trg_family_members_cap`: Trigger strictly capping each customer at a maximum of 10 family members.
+  - `measurement_sets` (Append-Only Versioned History):
+    - `id`, `customer_id references customers(id)`, `family_member_id uuid null`.
+    - Composite foreign key `foreign key (family_member_id, customer_id) references public.family_members(id, customer_id) on delete cascade`, making it impossible at the database level for Customer A to link measurements to Customer B's family member.
+    - `garment_type check in ('kameez','shirt','shalwar','trouser','waistcoat','sherwani','coat')`.
+    - `values jsonb not null`: Validated as a non-empty JSON object under 4 KB.
+    - `fit_preference check in ('slim','regular','loose')`, `notes text (max 500 chars)`, `source check in ('self','tailor')`, `shop_id references tailor_shops(id)`.
+    - `taken_on date not null default current_date`, `created_at timestamptz default now()`.
+    - Composite index `idx_measurement_sets_query` on `(customer_id, family_member_id, garment_type, created_at desc)`.
+  - `trg_measurement_sets_immutability`: Trigger blocking updates to any column other than `notes`, ensuring measurement history is strictly append-only.
+  - Explicit RLS policies enforcing customer ownership and consent-based tailor read access (`has_active_consent(shop, customer_id, 'measurements')`). Anon privileges revoked.
+- **RLS Verification Test Suite (`supabase/tests/rls_checks_phase3.sql`)**:
+  - 7 comprehensive security assertions verifying:
+    1. Customer A cannot read, insert, or delete Customer B's family members or measurement sets.
+    2. Customer cannot insert a measurement set with `source='tailor'` or a `shop_id`.
+    3. Customer cannot attach a set to another customer's family member (composite FK guard).
+    4. 11th family member insertion is rejected by database trigger.
+    5. Measurement `values` cannot be modified, while `notes` remain editable.
+    6. Tailor consent matrix: tailors with active consent on 'measurements' read sets and family members; tailors without consent, or with pending/revoked/expired/orders-only consents read nothing.
+    7. Anonymous role reads nothing.
+- **Unit & Fraction Parsing Engine (`src/lib/measurements/units.ts`)**:
+  - Canonical database storage in inches.
+  - Transparent conversion between inches and centimeters (`in` vs `cm`), rounding to nearest 0.25".
+  - Flexible fraction parsing: handles decimal strings (`"15.5"`), standard fractions (`"15 1/2"`, `"15-1/2"`, `"1/2"`), and Unicode vulgar fractions (`"15½"`, `"40¼"`, `"15¾"`).
+  - Fraction formatter: formats `15.5` as `15 1/2"`.
+  - Delta formatter: displays measurement deltas with intuitive +/- badges and color-coding.
+  - Self-checking unit test script (`scripts/verify-units.mjs`) verified with 100% test coverage.
+- **Measurement Templates & Pakistani Garment Specs (`src/lib/measurements/templates.ts`)**:
+  - Full Pakistani tailoring taxonomy with authentic terms: Length (`Lambai`), Shoulder (`Teera`), Chest (`Chhati`), Waist (`Kamar`), Hip (`Gheera`), Hem Width (`Daman`), Sleeve (`Astin`), Cuff (`Kaf`), Neck/Collar (`Gala / Coller`), Armhole (`Mondha`), Bottom Opening (`Pancha`).
+  - Covers Men, Women, Boys, and Girls across 7 garment types with anatomical measuring tips, min/max bounds, and 0.25" steps.
+  - Dynamic Zod schema generator (`createMeasurementValuesSchema`) keeping client forms and server validation tightly synchronized.
+- **Features & Screens**:
+  - **First-Login Onboarding Wizard (`src/components/customer/onboarding-wizard.tsx`)**:
+    - 3-step modal dialog displayed until `fit_category` is set: Step 1 (Fit category & unit), Step 2 (Phone & city), Step 3 (First measurement prompt).
+  - **Family Management Hub (`/app/family`)**:
+    - Manage up to 10 family members with colorful initial avatars, relation tags, fit categories, Add/Edit dialogs, and Delete confirmation modals.
+  - **Measurements Passport Hub (`/app/measurements`)**:
+    - Horizontal person switcher chips ("Me" + family members).
+    - Grid of garment cards per fit category displaying the latest measurement date, fit preference tag, key measurements preview, or "+ Add" empty states.
+  - **New Measurement Entry Form (`/app/measurements/new`)**:
+    - Template-driven form with Urdu tailoring terms, expandable "How to measure" tips, decimal/fraction inputs, in/cm toggle, fit preference selector, notes, and measurement date.
+  - **Measurement Set Detail & History View (`/app/measurements/[setId]`)**:
+    - Full measurement breakdown with comparison deltas against previous sets (`+0.5"`, `-0.25"`).
+    - Inline SVG trend sparkline showing measurement progression over time.
+    - Editable notes drawer / modal.
+    - One-tap WhatsApp sharing link (`wa.me/?text=...`) formatted with boutique greeting and full measurements list.
+    - "Copy as Plain Text" clipboard action and Delete confirmation dialog.
+  - **Profile Settings (`/app/profile`)**:
+    - Added Passport Preferences card for updating default fit category and preferred units.
+  - **Navigation**:
+    - Updated customer sidebar and bottom navigation with "Passport" (`/app/measurements`) and "Family" (`/app/family`).
+- **Verification**:
+  - `node scripts/verify-units.mjs`: PASSED
+  - `npm run typecheck`: PASSED (0 errors)
+  - `npm run lint`: PASSED (0 errors, 0 warnings)
+  - `npm run format`: PASSED
+  - `npm run build`: PASSED (28 routes compiled clean with partial prerendering)
+
+---
+
+
 ### 2. How to Run & Verify
 
 ```bash

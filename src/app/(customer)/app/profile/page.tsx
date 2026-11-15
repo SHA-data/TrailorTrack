@@ -77,6 +77,8 @@ export default async function CustomerProfilePage() {
         initialFullName={profile?.full_name || ""}
         initialPhone={profile?.phone || ""}
         initialCity={customer?.city || ""}
+        initialFitCategory={customer?.fit_category || "men"}
+        initialPreferredUnit={customer?.preferred_unit || "in"}
       />
 
       {/* Sign Out Section */}

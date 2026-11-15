@@ -1,7 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { QrCode, Users, ShoppingBag, Clock, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
+import {
+  QrCode,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  CircleDashed,
+  Store,
+  Layers,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +40,7 @@ export default async function TailorDashboardPage() {
 
   const shopDisplayName = shop?.shop_name || "Your Tailor Shop";
   const tailorName = profile?.full_name || "Master Tailor";
+  const isProfileComplete = Boolean(shop?.shop_name && shop?.city && shop?.address && shop?.phone);
 
   return (
     <div className="animate-fade-in space-y-8">
@@ -56,47 +66,88 @@ export default async function TailorDashboardPage() {
         </Button>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="border-border/70 bg-card/60">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-              Active Orders
-            </CardTitle>
-            <ShoppingBag className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground font-serif text-2xl font-bold">0</div>
-            <p className="text-muted-foreground mt-1 text-xs">In cutting & stitching</p>
-          </CardContent>
-        </Card>
+      {/* Getting Started Checklist */}
+      <Card className="border-border/80 bg-card/60 shadow-xs">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-foreground font-serif text-lg font-medium">
+                Getting Started as a Partner Tailor
+              </CardTitle>
+              <CardDescription className="font-sans text-xs">
+                Setup your digital workshop to receive customer measurement passports.
+              </CardDescription>
+            </div>
+            <span className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium">
+              <Sparkles className="h-3 w-3" />
+              {isProfileComplete ? "Ready for Intake" : "Setup in Progress"}
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="border-border/70 bg-background/50 flex flex-col justify-between rounded-xl border p-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  {isProfileComplete ? (
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                  ) : (
+                    <CircleDashed className="text-accent h-4 w-4 shrink-0" />
+                  )}
+                  <span className="text-foreground text-xs font-semibold">Shop Profile</span>
+                </div>
+                <p className="text-muted-foreground text-[11px] leading-relaxed">
+                  {isProfileComplete
+                    ? "Shop name, market address, and contact verified."
+                    : "Add your market address and contact for customers."}
+                </p>
+              </div>
+              <Button asChild variant="outline" size="sm" className="mt-3 w-full text-xs">
+                <Link href="/tailor/shop">
+                  <Store className="mr-1 h-3.5 w-3.5" />
+                  {isProfileComplete ? "Edit Profile" : "Complete Setup"}
+                </Link>
+              </Button>
+            </div>
 
-        <Card className="border-border/70 bg-card/60">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-              Pending Fittings
-            </CardTitle>
-            <Clock className="text-accent h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground font-serif text-2xl font-bold">0</div>
-            <p className="text-muted-foreground mt-1 text-xs">Trial fittings scheduled</p>
-          </CardContent>
-        </Card>
+            <div className="border-border/70 bg-background/50 flex flex-col justify-between rounded-xl border p-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <CircleDashed className="text-muted-foreground h-4 w-4 shrink-0" />
+                  <span className="text-foreground text-xs font-semibold">Digital QR Intake</span>
+                </div>
+                <p className="text-muted-foreground text-[11px] leading-relaxed">
+                  Direct camera scanner for instant customer passport import upon approval.
+                </p>
+              </div>
+              <Button asChild variant="outline" size="sm" className="mt-3 w-full text-xs">
+                <Link href="/tailor/scan">
+                  <QrCode className="mr-1 h-3.5 w-3.5" />
+                  Intake Scanner
+                </Link>
+              </Button>
+            </div>
 
-        <Card className="border-border/70 bg-card/60">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-              Connected Clients
-            </CardTitle>
-            <Users className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground font-serif text-2xl font-bold">0</div>
-            <p className="text-muted-foreground mt-1 text-xs">With active consent</p>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="border-border/70 bg-background/50 flex flex-col justify-between rounded-xl border p-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <CircleDashed className="text-muted-foreground h-4 w-4 shrink-0" />
+                  <span className="text-foreground text-xs font-semibold">Karigar Pipeline</span>
+                </div>
+                <p className="text-muted-foreground text-[11px] leading-relaxed">
+                  Track cutting, artisan assignments, and trial fitting milestones.
+                </p>
+              </div>
+              <Button asChild variant="outline" size="sm" className="mt-3 w-full text-xs" disabled>
+                <span className="flex items-center justify-center">
+                  <Layers className="mr-1 h-3.5 w-3.5" />
+                  Coming soon
+                </span>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Scan & Intake Banner */}
       <Card className="border-primary/20 from-primary/5 via-card to-accent/5 relative overflow-hidden bg-gradient-to-br">
