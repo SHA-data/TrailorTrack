@@ -252,30 +252,62 @@ begin
   perform set_config('role', 'anon', true);
   perform set_config('request.jwt.claims', '{}', true);
 
-  select count(*) into v_count from public.profiles;
-  if v_count = 0 then
-    raise notice 'CHECK 6.1: PASS - anon cannot select from profiles';
+  -- 6.1 profiles
+  v_exception_caught := false;
+  v_count := 0;
+  begin
+    select count(*) into v_count from public.profiles;
+  exception when others then
+    v_exception_caught := true;
+  end;
+
+  if v_exception_caught or v_count = 0 then
+    raise notice 'CHECK 6.1: PASS - anon cannot select from profiles (access denied)';
   else
     raise exception 'CHECK 6.1: FAIL - anon selected from profiles!';
   end if;
 
-  select count(*) into v_count from public.customers;
-  if v_count = 0 then
-    raise notice 'CHECK 6.2: PASS - anon cannot select from customers';
+  -- 6.2 customers
+  v_exception_caught := false;
+  v_count := 0;
+  begin
+    select count(*) into v_count from public.customers;
+  exception when others then
+    v_exception_caught := true;
+  end;
+
+  if v_exception_caught or v_count = 0 then
+    raise notice 'CHECK 6.2: PASS - anon cannot select from customers (access denied)';
   else
     raise exception 'CHECK 6.2: FAIL - anon selected from customers!';
   end if;
 
-  select count(*) into v_count from public.tailor_shops;
-  if v_count = 0 then
-    raise notice 'CHECK 6.3: PASS - anon cannot select from tailor_shops';
+  -- 6.3 tailor_shops
+  v_exception_caught := false;
+  v_count := 0;
+  begin
+    select count(*) into v_count from public.tailor_shops;
+  exception when others then
+    v_exception_caught := true;
+  end;
+
+  if v_exception_caught or v_count = 0 then
+    raise notice 'CHECK 6.3: PASS - anon cannot select from tailor_shops (access denied)';
   else
     raise exception 'CHECK 6.3: FAIL - anon selected from tailor_shops!';
   end if;
 
-  select count(*) into v_count from public.consents;
-  if v_count = 0 then
-    raise notice 'CHECK 6.4: PASS - anon cannot select from consents';
+  -- 6.4 consents
+  v_exception_caught := false;
+  v_count := 0;
+  begin
+    select count(*) into v_count from public.consents;
+  exception when others then
+    v_exception_caught := true;
+  end;
+
+  if v_exception_caught or v_count = 0 then
+    raise notice 'CHECK 6.4: PASS - anon cannot select from consents (access denied)';
   else
     raise exception 'CHECK 6.4: FAIL - anon selected from consents!';
   end if;
