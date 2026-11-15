@@ -199,7 +199,10 @@ begin
     raise exception 'CHECK 5.1: FAIL - has_active_consent() returned true for pending!';
   end if;
 
-  -- 5.2 Active status -> true
+  -- 5.2 Customer approves: switch to Customer A who owns consent
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_user_a::text)::text, true);
+
   update public.consents
   set status = 'active', granted_at = now(), expires_at = now() + interval '30 days'
   where id = v_consent_id;
