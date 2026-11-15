@@ -85,9 +85,7 @@ export function Footer() {
 
         {/* Bottom Strip */}
         <div className="border-border/60 text-muted-foreground flex flex-col items-center justify-between gap-4 border-t pt-8 font-sans text-xs sm:flex-row">
-          <p>
-            © 2026 TailorTrack. {footer.rights}
-          </p>
+          <p>© 2026 TailorTrack. {footer.rights}</p>
           <div className="flex items-center gap-6">
             <Link href="/privacy" className="hover:text-primary transition-colors">
               Privacy

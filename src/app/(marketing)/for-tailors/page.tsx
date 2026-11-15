@@ -1,15 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Scissors,
-  ArrowRight,
-  ShieldAlert,
-  Clock,
-  Sparkles,
-  Users,
-  FileCheck,
-} from "lucide-react";
+import { Scissors, ArrowRight, ShieldAlert, Clock, Sparkles, Users, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Reveal } from "@/components/marketing/reveal";

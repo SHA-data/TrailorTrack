@@ -183,11 +183,11 @@ export const content = {
       swatchLabel: "Choose Fabric Tone:",
     },
     threeD: {
-      heading: "Real-Time 3D Biometric Try-On",
+      heading: "Real-Time 3D Mesh Try-On",
       description:
         "Using lightweight browser pose estimation, preview garments draped directly over your camera feed with real-time cloth physics. Zero hardware required.",
-      badge: "Coming in Phase 7",
-      scanningNotice: "Biometric Pose Landmarker • Real-Time Mesh Drape • Browser-Native",
+      badge: "Coming soon",
+      scanningNotice: "Camera Pose Landmarker • Real-Time Mesh Drape • Browser-Native",
     },
   },
   privacy: {
@@ -238,7 +238,7 @@ export const content = {
       {
         question: "What is TailorTrack?",
         answer:
-          "TailorTrack is Pakistan's first digital tailoring passport. It gives customers full ownership of their body measurements and style preferences in a secure digital profile. Participating tailors can scan your QR code with your permission to view verified measurements, create orders, and send status updates.",
+          "TailorTrack is a digital tailoring passport made for Pakistan. It gives customers full ownership of their body measurements and style preferences in a secure digital profile. Participating tailors can scan your QR code with your permission to view verified measurements, create orders, and send status updates.",
       },
       {
         question: "How do tailors read my measurements?",
@@ -350,7 +350,7 @@ export const content = {
     title: "Privacy Policy",
     lastUpdated: "November 2026",
     intro:
-      "At TailorTrack, we believe your biometric body measurements and personal style data belong strictly to you. This policy outlines how we handle, protect, and respect your information.",
+      "At TailorTrack, we believe your body measurements and personal style data belong strictly to you. This policy outlines how we handle, protect, and respect your information.",
     sections: [
       {
         heading: "1. Data Sovereignty & Customer Ownership",
@@ -400,7 +400,7 @@ export const content = {
       title: "Log in to TailorTrack",
       subtitle: "Access your digital tailoring passport and active orders.",
       notice:
-        "Authentication is launching in Phase 2 with passwordless Magic Links and phone OTP verification.",
+        "Authentication is launching with passwordless Magic Links and phone OTP verification.",
       backHome: "Return to Homepage",
       signupPrompt: "Don't have a passport yet?",
       signupLink: "Create a passport",
@@ -409,8 +409,7 @@ export const content = {
       badge: "Free Registration",
       title: "Create Your Digital Passport",
       subtitle: "Take ownership of your measurements and never get re-measured from scratch.",
-      notice:
-        "Customer registration will go live in Phase 2. Prepare your measurements and stay tuned!",
+      notice: "Customer registration will go live soon. Prepare your measurements and stay tuned!",
       backHome: "Return to Homepage",
       loginPrompt: "Already have a passport?",
       loginLink: "Log in instead",

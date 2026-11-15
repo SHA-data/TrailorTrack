@@ -197,7 +197,7 @@ export function TryOnShowcase() {
                       {/* Animated Scanning Sweep Bar */}
                       <div className="via-accent absolute top-0 right-0 left-0 h-1 animate-[bounce_3s_infinite_ease-in-out] bg-gradient-to-r from-transparent to-transparent" />
 
-                      {/* Stylized Biometric Silhouette */}
+                      {/* Stylized Silhouette */}
                       <svg
                         viewBox="0 0 160 220"
                         fill="none"

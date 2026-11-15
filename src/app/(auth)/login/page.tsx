@@ -1,7 +1,13 @@
-import React from "react";
-import type { Metadata } from "next";
+"use client";
+
+import React, { Suspense, useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowLeft, Clock, ShieldCheck } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardHeader,
@@ -10,66 +16,147 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { content } from "@/lib/content";
+import { signInAction } from "@/lib/auth/actions";
 
-export const metadata: Metadata = {
-  title: "Log In — TailorTrack",
-  description: "Log in to your TailorTrack digital passport.",
-};
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const resetSuccess = searchParams.get("reset") === "success";
+  const authError = searchParams.get("error");
+  const redirectTo = searchParams.get("redirectTo");
 
-export default function LoginPage() {
-  const { login } = content.authPlaceholders;
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(
+    authError === "auth_failed" ? "Authentication session could not be established" : null
+  );
+  const [isPending, startTransition] = useTransition();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    const formData = new FormData(e.currentTarget);
+    if (redirectTo) {
+      formData.set("redirectTo", redirectTo);
+    }
+
+    startTransition(async () => {
+      const result = await signInAction(formData);
+      if (result?.error) {
+        setErrorMessage(result.error);
+        toast.error(result.error);
+      }
+    });
+  };
 
   return (
-    <Card className="border-border bg-card shadow-lg">
-      <CardHeader className="space-y-2 pb-4 text-center">
-        <div className="flex justify-center">
-          <Badge variant="outline" className="border-accent text-accent">
-            {login.badge}
-          </Badge>
-        </div>
-        <CardTitle className="text-primary font-serif text-2xl font-bold sm:text-3xl">
-          {login.title}
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="space-y-1 text-center">
+        <CardTitle className="text-primary font-serif text-2xl font-bold tracking-tight">
+          Welcome back
         </CardTitle>
-        <CardDescription className="text-muted-foreground font-sans text-sm">
-          {login.subtitle}
+        <CardDescription className="font-sans text-xs">
+          Access your digital measurements passport and active tailoring orders.
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-5">
-        <div className="bg-background border-border/80 space-y-2.5 rounded-2xl border p-4 text-center">
-          <Clock className="text-accent mx-auto size-8" />
-          <h3 className="text-foreground font-serif text-lg font-bold">Launching in Phase 2</h3>
-          <p className="text-muted-foreground font-sans text-xs leading-relaxed sm:text-sm">
-            {login.notice}
-          </p>
-        </div>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          {resetSuccess && (
+            <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-800 dark:text-emerald-300">
+              <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+              <span>Password successfully updated. Please sign in with your new password.</span>
+            </div>
+          )}
 
-        <div className="bg-primary/5 border-primary/20 text-primary flex items-center gap-2 rounded-xl border p-3 font-sans text-xs">
-          <ShieldCheck className="text-accent size-4 shrink-0" />
-          <span>Full passwordless security & instant customer data ownership</span>
-        </div>
-      </CardContent>
+          {errorMessage && (
+            <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-center gap-2 rounded-xl border p-3 text-xs font-medium">
+              <AlertCircle className="size-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
-      <CardFooter className="border-border/40 flex flex-col gap-3 border-t pt-2">
-        <Link href="/" className="w-full">
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-foreground text-xs font-semibold">
+              Email Address
+            </Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              placeholder="you@domain.pk"
+              className="bg-background border-input"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="text-foreground text-xs font-semibold">
+                Password
+              </Label>
+              <Link
+                href="/forgot-password"
+                className="text-primary text-xs font-medium hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                className="bg-background border-input pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex flex-col space-y-4">
           <Button
-            variant="outline"
-            className="border-border text-foreground hover:bg-muted w-full gap-2"
+            type="submit"
+            disabled={isPending}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-xl py-2 font-medium shadow-xs"
           >
-            <ArrowLeft className="size-4" />
-            <span>{login.backHome}</span>
+            {isPending ? "Signing in..." : "Sign in to TailorTrack"}
           </Button>
-        </Link>
-        <div className="text-muted-foreground text-center font-sans text-xs">
-          <span>{login.signupPrompt} </span>
-          <Link href="/signup" className="text-primary font-semibold hover:underline">
-            {login.signupLink}
-          </Link>
-        </div>
-      </CardFooter>
+
+          <p className="text-muted-foreground text-center text-xs">
+            Don&apos;t have a tailoring passport yet?{" "}
+            <Link
+              href="/signup"
+              className="text-primary font-medium transition-colors hover:underline"
+            >
+              Create passport
+            </Link>
+          </p>
+        </CardFooter>
+      </form>
     </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <Card className="border-border bg-card text-muted-foreground p-8 text-center text-xs shadow-sm">
+          Loading sign in...
+        </Card>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

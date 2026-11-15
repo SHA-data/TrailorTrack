@@ -10,12 +10,7 @@ interface RevealProps {
   direction?: "up" | "down" | "left" | "right" | "none";
 }
 
-export function Reveal({
-  children,
-  className,
-  delayMs = 0,
-  direction = "up",
-}: RevealProps) {
+export function Reveal({ children, className, delayMs = 0, direction = "up" }: RevealProps) {
   const [isVisible, setIsVisible] = useState(false);
   const elementRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +62,7 @@ export function Reveal({
         transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
       }}
       className={cn(
-        "transition-all ease-out motion-reduce:transition-none motion-reduce:transform-none motion-reduce:opacity-100",
+        "transition-all ease-out motion-reduce:transform-none motion-reduce:opacity-100 motion-reduce:transition-none",
         getDirectionClasses(),
         className
       )}

@@ -68,9 +68,14 @@ export function HeroVisual() {
                 <Check className="text-accent size-3" /> Verified
               </span>
             </div>
-            <h4 className="font-serif text-lg font-bold tracking-tight text-[#f7f1e3]">
-              {cardData.ownerName}
-            </h4>
+            <div className="flex items-center gap-2">
+              <h4 className="font-serif text-lg font-bold tracking-tight text-[#f7f1e3]">
+                {cardData.ownerName}
+              </h4>
+              <span className="bg-accent/30 text-accent rounded px-1.5 py-0.5 font-sans text-[9px] font-semibold tracking-wider uppercase">
+                Sample
+              </span>
+            </div>
             <p className="font-sans text-xs text-[#f7f1e3]/80">{cardData.garment}</p>
           </div>
 
