@@ -174,7 +174,7 @@ export async function signInAction(formData: FormData) {
   const targetPath = redirectTo && redirectTo.startsWith("/") ? redirectTo : defaultPath;
 
   console.log("[signInAction] Determined role:", role, "Redirecting to:", targetPath);
-  return { success: true, redirectUrl: targetPath };
+  redirect(targetPath);
 }
 
 export async function signOutAction() {
