@@ -22,6 +22,7 @@ export default async function TokenGatewayPage({ params }: PageProps) {
 
   let viewerState: "logged_out" | "customer" | "tailor" = "logged_out";
   let initialLookup: LookupData | null = null;
+  let lookupOutcome: "found" | "not_found" | "rate_limited" | "unexpected_error" = "not_found";
 
   if (user) {
     const { data: profile } = await supabase
@@ -37,9 +38,16 @@ export default async function TokenGatewayPage({ params }: PageProps) {
         p_token: token.trim(),
       });
       if (error) {
-        console.error("[lookup_passport error]:", error);
+        if (error.message?.toLowerCase().includes("rate limit")) {
+          lookupOutcome = "rate_limited";
+        } else {
+          lookupOutcome = "unexpected_error";
+        }
       } else if (data) {
         initialLookup = data as unknown as LookupData;
+        lookupOutcome = "found";
+      } else {
+        lookupOutcome = "not_found";
       }
     } else {
       viewerState = "customer";
@@ -48,7 +56,12 @@ export default async function TokenGatewayPage({ params }: PageProps) {
 
   return (
     <div className="container max-w-lg px-4 py-12 sm:py-16">
-      <TokenGatewayClient token={token} viewerState={viewerState} initialLookup={initialLookup} />
+      <TokenGatewayClient
+        token={token}
+        viewerState={viewerState}
+        initialLookup={initialLookup}
+        lookupOutcome={lookupOutcome}
+      />
     </div>
   );
 }

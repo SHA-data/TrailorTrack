@@ -38,7 +38,8 @@ export default async function CustomerPassportPage() {
   // Dynamically resolve siteUrl from incoming request headers or environment variable
   const headersList = await headers();
   const host = headersList.get("x-forwarded-host") || headersList.get("host");
-  const proto = headersList.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+  const proto =
+    headersList.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
   const detectedUrl = host ? `${proto}://${host}` : "http://localhost:3000";
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")

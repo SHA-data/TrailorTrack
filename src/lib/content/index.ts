@@ -105,7 +105,7 @@ export const content = {
         number: "02",
         title: "Show Your QR Code at Any Tailor",
         description:
-          "Visiting a new tailor or a neighborhood boutique? Present your encrypted QR code. The tailor scans it to instantly view your verified measurement profile with your consent.",
+          "Visiting a new tailor or a neighborhood boutique? Present your encrypted QR code. The tailor scans it to instantly view your measurement profile with your consent.",
         detail: "You decide when access expires and can revoke it anytime",
       },
       {
@@ -238,7 +238,7 @@ export const content = {
       {
         question: "What is TailorTrack?",
         answer:
-          "TailorTrack is a digital tailoring passport made for Pakistan. It gives customers full ownership of their body measurements and style preferences in a secure digital profile. Participating tailors can scan your QR code with your permission to view verified measurements, create orders, and send status updates.",
+          "TailorTrack is a digital tailoring passport made for Pakistan. It gives customers full ownership of their body measurements and style preferences in a secure digital profile. Participating tailors can scan your QR code with your permission to view your saved measurements, create orders, and send status updates.",
       },
       {
         question: "How do tailors read my measurements?",
@@ -322,7 +322,7 @@ export const content = {
       {
         title: "Zero Lost Measurements",
         description:
-          "Instant access to verified customer measurements with one QR scan. No misplaced measurement diaries or unreadable handwriting.",
+          "Instant access to customer measurements with one QR scan. No misplaced measurement diaries or unreadable handwriting.",
       },
       {
         title: "Fewer Customer Disputes",

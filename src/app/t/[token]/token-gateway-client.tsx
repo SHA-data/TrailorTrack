@@ -25,18 +25,28 @@ export interface LookupData {
   cooldown_until: string | null;
 }
 
+export type LookupOutcome = "found" | "not_found" | "rate_limited" | "unexpected_error";
+
 interface TokenGatewayClientProps {
   token: string;
   viewerState: "logged_out" | "customer" | "tailor";
   initialLookup: LookupData | null;
+  lookupOutcome?: LookupOutcome;
 }
 
-export function TokenGatewayClient({ token, viewerState, initialLookup }: TokenGatewayClientProps) {
+export function TokenGatewayClient({
+  token,
+  viewerState,
+  initialLookup,
+  lookupOutcome = "found",
+}: TokenGatewayClientProps) {
   const router = useRouter();
   const [selectedScopes, setSelectedScopes] = useState<string[]>(["measurements", "orders"]);
   const [isPending, startTransition] = useTransition();
   const [consentId, setConsentId] = useState<string | null>(initialLookup?.consent_id || null);
   const [currentStatus, setCurrentStatus] = useState<string>(initialLookup?.status || "none");
+  const [isTimedOut, setIsTimedOut] = useState(false);
+  const [pollAttempt, setPollAttempt] = useState(0);
 
   // If already active on load, redirect to customer profile immediately
   useEffect(() => {
@@ -49,14 +59,22 @@ export function TokenGatewayClient({ token, viewerState, initialLookup }: TokenG
     }
   }, [viewerState, initialLookup, consentId, router]);
 
-  // Polling for pending status (every 4 seconds)
+  // Polling for pending status (every 4 seconds, pauses when tab hidden, stops after 10 min)
   useEffect(() => {
-    if (viewerState !== "tailor" || currentStatus !== "pending" || !consentId) {
+    if (viewerState !== "tailor" || currentStatus !== "pending" || !consentId || isTimedOut) {
       return;
     }
 
     let isMounted = true;
-    const interval = setInterval(async () => {
+    const startTime = Date.now();
+    const MAX_DURATION_MS = 10 * 60 * 1000; // 10 minutes
+
+    const checkStatus = async () => {
+      if (document.hidden) return;
+      if (Date.now() - startTime > MAX_DURATION_MS) {
+        if (isMounted) setIsTimedOut(true);
+        return;
+      }
       try {
         const data = await getMyConsentStatusAction(consentId);
         if (!isMounted || !data) return;
@@ -70,13 +88,23 @@ export function TokenGatewayClient({ token, viewerState, initialLookup }: TokenG
       } catch {
         // Silently retry on next tick
       }
-    }, 4000);
+    };
+
+    const interval = setInterval(checkStatus, 4000);
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        checkStatus();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [viewerState, currentStatus, consentId, router]);
+  }, [viewerState, currentStatus, consentId, isTimedOut, pollAttempt, router]);
 
   const handleRequestAccess = () => {
     startTransition(async () => {
@@ -140,18 +168,63 @@ export function TokenGatewayClient({ token, viewerState, initialLookup }: TokenG
     );
   }
 
-  // 3. TAILOR VIEW: TOKEN INVALID OR EXPIRED
-  if (!initialLookup) {
+  // 3. TAILOR VIEW: RATE LIMITED
+  if (lookupOutcome === "rate_limited") {
     return (
       <Card className="border-border bg-card mx-auto max-w-md space-y-4 p-6 text-center shadow-lg">
         <div className="bg-destructive/10 border-destructive/30 text-destructive mx-auto flex size-14 items-center justify-center rounded-full border">
           <AlertCircle className="size-7" />
         </div>
         <div className="space-y-1.5">
-          <CardTitle className="text-foreground font-serif text-xl">Passport Not Found</CardTitle>
+          <CardTitle className="text-foreground font-serif text-xl">
+            {accessContent.gateway.rateLimitedTitle}
+          </CardTitle>
           <CardDescription className="text-muted-foreground text-xs leading-relaxed">
-            This passport token is invalid or has been reset by the customer. Please ask the
-            customer to display their latest QR code.
+            {accessContent.gateway.rateLimitedSubtitle}
+          </CardDescription>
+        </div>
+        <Button asChild variant="outline" className="w-full">
+          <Link href="/tailor/scan">Back to Scanner</Link>
+        </Button>
+      </Card>
+    );
+  }
+
+  // 3.1 TAILOR VIEW: SYSTEM / UNEXPECTED ERROR
+  if (lookupOutcome === "unexpected_error") {
+    return (
+      <Card className="border-border bg-card mx-auto max-w-md space-y-4 p-6 text-center shadow-lg">
+        <div className="mx-auto flex size-14 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-600">
+          <AlertCircle className="size-7" />
+        </div>
+        <div className="space-y-1.5">
+          <CardTitle className="text-foreground font-serif text-xl">
+            {accessContent.gateway.unexpectedErrorTitle}
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-xs leading-relaxed">
+            {accessContent.gateway.unexpectedErrorSubtitle}
+          </CardDescription>
+        </div>
+        <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
+          Try Again
+        </Button>
+      </Card>
+    );
+  }
+
+  // 3.2 TAILOR VIEW: PASSPORT NOT FOUND
+  if (!initialLookup || lookupOutcome === "not_found") {
+    return (
+      <Card className="border-border bg-card mx-auto max-w-md space-y-4 p-6 text-center shadow-lg">
+        <div className="bg-destructive/10 border-destructive/30 text-destructive mx-auto flex size-14 items-center justify-center rounded-full border">
+          <AlertCircle className="size-7" />
+        </div>
+        <div className="space-y-1.5">
+          <CardTitle className="text-foreground font-serif text-xl">
+            {accessContent.gateway.notFoundTitle}
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-xs leading-relaxed">
+            {accessContent.gateway.notFoundSubtitle}
           </CardDescription>
         </div>
         <Button asChild variant="outline" className="w-full">
@@ -180,9 +253,30 @@ export function TokenGatewayClient({ token, viewerState, initialLookup }: TokenG
             {accessContent.gateway.pendingSubtitle}
           </CardDescription>
         </div>
-        <div className="bg-muted/40 text-muted-foreground rounded-lg border p-3 text-xs">
-          Checking status automatically every 4 seconds...
-        </div>
+
+        {isTimedOut ? (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-700">
+              Live polling paused after 10 minutes. Click below to resume checking for customer
+              approval.
+            </div>
+            <Button
+              onClick={() => {
+                setIsTimedOut(false);
+                setPollAttempt((p) => p + 1);
+              }}
+              variant="default"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 w-full text-xs"
+            >
+              Still waiting. Check again
+            </Button>
+          </div>
+        ) : (
+          <div className="bg-muted/40 text-muted-foreground rounded-lg border p-3 text-xs">
+            Checking status automatically every 4 seconds...
+          </div>
+        )}
+
         <Button asChild variant="outline" size="sm" className="w-full text-xs">
           <Link href="/tailor/customers">View My Customer List</Link>
         </Button>

@@ -463,6 +463,11 @@ export function AccessClient({ pendingRequests, accessList, activityLogs }: Acce
                 </p>
               </div>
 
+              {/* Shared profile details disclosure */}
+              <div className="bg-muted/40 text-muted-foreground rounded-md border p-2.5 text-[11px] leading-relaxed">
+                {accessContent.gateway.sharedFieldsDisclosure}
+              </div>
+
               {/* Scope checkboxes */}
               <div className="space-y-2">
                 <label className="text-foreground block text-xs font-semibold">

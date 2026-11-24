@@ -148,7 +148,7 @@ export default async function TailorDashboardPage() {
                 </div>
                 <p className="text-muted-foreground text-[11px] leading-relaxed">
                   {isProfileComplete
-                    ? "Shop name, market address, and contact verified."
+                    ? "Shop name, market address, and contact configured."
                     : "Add your market address and contact for customers."}
                 </p>
               </div>
@@ -216,8 +216,8 @@ export default async function TailorDashboardPage() {
             <CardTitle className="font-serif text-xl">Quick Intake Scanner</CardTitle>
           </div>
           <CardDescription>
-            Scan a customer’s digital passport QR to load verified Shalwar Kameez, Kurta, or
-            Sherwani specifications instantly.
+            Scan a customer’s digital passport QR to load customer Shalwar Kameez, Kurta, or
+            Sherwani specifications with their consent.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

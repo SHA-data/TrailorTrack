@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Clock, ShieldCheck, User, Users, Phone, MapPin } from "lucide-react";
+import { ArrowLeft, Clock, User, Users, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -135,14 +135,12 @@ export function CustomerDetailClient({
           </div>
 
           <div className="flex flex-col gap-1.5 sm:items-end">
-            <div className="flex items-center gap-1.5 rounded-full border border-green-200 bg-green-500/10 px-2.5 py-1 text-xs font-semibold text-green-700">
-              <ShieldCheck className="size-3.5" />
-              <span>Authorized Client</span>
+            <div className="text-muted-foreground border-border/80 bg-muted/40 flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium">
+              <Clock className="text-accent size-3.5" />
+              <span>
+                Access active, expires in {daysLeft} {daysLeft === 1 ? "day" : "days"}
+              </span>
             </div>
-            <p className="text-muted-foreground flex items-center gap-1 text-[11px]">
-              <Clock className="text-accent size-3" />
-              <span>Consent active ({daysLeft} days remaining)</span>
-            </p>
           </div>
         </div>
 

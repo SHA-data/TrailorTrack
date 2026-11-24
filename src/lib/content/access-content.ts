@@ -60,7 +60,7 @@ export const accessContent = {
   gateway: {
     loggedOutTitle: "TailorTrack Digital Passport",
     loggedOutMessage:
-      "This is a verified customer passport on TailorTrack. If you are a master tailor, please sign in to your shop account to request access to these measurements.",
+      "This is a customer passport on TailorTrack. If you are a master tailor, please sign in to your shop account to request access to these measurements.",
     customerMessage:
       "This is your tailoring passport link. Share this QR code or link with your master tailor so they can request access.",
     maskedCustomer: "Customer Passport",
@@ -77,5 +77,16 @@ export const accessContent = {
       "Your previous access to this customer has expired. You can submit a new request.",
     revokedTitle: "Access Revoked",
     revokedSubtitle: "Access to this customer's passport was revoked.",
+    notFoundTitle: "Passport Not Found",
+    notFoundSubtitle:
+      "This passport token is invalid or has been reset by the customer. Please ask the customer to display their latest QR code.",
+    rateLimitedTitle: "Too Many Lookups",
+    rateLimitedSubtitle:
+      "You have exceeded the hourly lookup limit. Please wait and try again later.",
+    unexpectedErrorTitle: "Lookup Error",
+    unexpectedErrorSubtitle:
+      "Unable to load passport details due to a connection or system issue. Please try again.",
+    sharedFieldsDisclosure:
+      "When access is approved, this shop can view your name, contact phone number, city, and fit category, in addition to the selected scopes.",
   },
 };
