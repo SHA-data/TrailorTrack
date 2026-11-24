@@ -2,12 +2,19 @@ import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { Lock, ArrowLeft } from "lucide-react";
+import { Lock, ArrowLeft, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { CustomerDetailClient } from "./customer-detail-client";
-import type { FitCategory, GarmentType, PreferredUnit, ConsentScope } from "@/types/database";
+import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import type {
+  FitCategory,
+  GarmentType,
+  PreferredUnit,
+  ConsentScope,
+  OrderStatus,
+} from "@/types/database";
 
 export const instant = false;
 
@@ -30,14 +37,35 @@ export default async function ConsentedCustomerPage({ params }: PageProps) {
     redirect(`/login?redirectTo=/tailor/customers/${customerId}`);
   }
 
+  // Fetch this shop's orders for this customer (allowed via RLS shop_id policy even without active consent)
+  const { data: rawOrders } = await supabase
+    .from("orders")
+    .select("id, order_seq, status, total_pkr, paid_pkr, delivery_date, created_at")
+    .eq("customer_id", customerId)
+    .order("created_at", { ascending: false });
+
+  const orders = (rawOrders || []).map((o) => ({
+    id: o.id,
+    order_seq: o.order_seq,
+    status: o.status as OrderStatus,
+    total_pkr: o.total_pkr,
+    paid_pkr: o.paid_pkr,
+    delivery_date: o.delivery_date,
+    created_at: o.created_at,
+  }));
+
   // Fetch consented customer via SECURITY DEFINER RPC
   const { data: customerRaw, error: customerError } = await supabase.rpc("get_consented_customer", {
     p_customer_id: customerId,
   });
 
   if (customerError || !customerRaw) {
+    const openOrders = orders.filter((o) =>
+      ["received", "cutting", "stitching", "ready"].includes(o.status)
+    );
+
     return (
-      <div className="container max-w-lg px-4 py-12">
+      <div className="container max-w-lg space-y-6 px-4 py-12">
         <Card className="border-border bg-card space-y-4 p-6 text-center shadow-md">
           <div className="mx-auto flex size-14 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-600">
             <Lock className="size-7" />
@@ -48,9 +76,32 @@ export default async function ConsentedCustomerPage({ params }: PageProps) {
             </CardTitle>
             <CardDescription className="text-muted-foreground text-xs leading-relaxed">
               You do not have an active, unexpired consent agreement to view this customer&apos;s
-              measurements. Please ask the customer to scan their QR passport to renew access.
+              profile or measurements. Please ask the customer to scan their QR passport to renew
+              access.
             </CardDescription>
           </div>
+
+          {openOrders.length > 0 && (
+            <div className="border-border bg-muted/30 space-y-2 rounded-md border p-3 text-left">
+              <p className="text-foreground flex items-center gap-1.5 text-xs font-semibold">
+                <ShoppingBag className="text-primary size-3.5" />
+                You have {openOrders.length} active order(s) for this client:
+              </p>
+              <div className="space-y-1">
+                {openOrders.map((ord) => (
+                  <Link
+                    key={ord.id}
+                    href={`/tailor/orders/${ord.id}`}
+                    className="hover:bg-muted text-primary flex items-center justify-between rounded p-1.5 text-xs font-medium hover:underline"
+                  >
+                    <span>Order #{String(ord.order_seq).padStart(4, "0")}</span>
+                    <OrderStatusBadge status={ord.status} />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           <Button asChild variant="outline" className="w-full text-xs">
             <Link href="/tailor/customers">
               <ArrowLeft className="mr-1.5 size-3.5" />
@@ -118,6 +169,7 @@ export default async function ConsentedCustomerPage({ params }: PageProps) {
         familyMembers={familyMembers}
         measurementSets={measurementSets}
         preferredUnit={preferredUnit}
+        orders={orders}
       />
     </div>
   );

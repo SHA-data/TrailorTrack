@@ -48,6 +48,15 @@ export default async function AccessPage() {
     .order("created_at", { ascending: false })
     .limit(50);
 
+  // Fetch shop IDs with open orders for this customer
+  const { data: openOrders } = await supabase
+    .from("orders")
+    .select("shop_id")
+    .eq("customer_id", customer.id)
+    .in("status", ["received", "cutting", "stitching", "ready"]);
+
+  const openOrdersShopIds = Array.from(new Set((openOrders || []).map((o) => o.shop_id)));
+
   type LogQueryRow = {
     id: string;
     action: "viewed_profile" | "viewed_measurements" | "viewed_family";
@@ -70,6 +79,7 @@ export default async function AccessPage() {
         pendingRequests={pendingRequests}
         accessList={accessList}
         activityLogs={activityLogs}
+        openOrdersShopIds={openOrdersShopIds}
       />
     </div>
   );

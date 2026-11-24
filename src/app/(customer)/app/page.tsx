@@ -6,6 +6,7 @@ import {
   QrCode,
   Ruler,
   Users,
+  ShoppingBag,
   ArrowRight,
   ShieldCheck,
   Sparkles,
@@ -54,8 +55,14 @@ export default async function CustomerDashboardPage() {
     .select("id", { count: "exact", head: true })
     .eq("customer_id", customer?.id || "");
 
+  const { count: activeOrdersCount } = await supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .in("status", ["received", "cutting", "stitching", "ready"]);
+
   const totalMeasurements = measurementCount || 0;
   const totalFamily = familyCount || 0;
+  const totalActiveOrders = activeOrdersCount || 0;
 
   // Calculate profile completion percentage
   let completionPoints = 0;
@@ -176,7 +183,35 @@ export default async function CustomerDashboardPage() {
       </Card>
 
       {/* Real Counts & Feature Cards Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Active Orders Card */}
+        <Card className="border-border bg-card flex flex-col justify-between shadow-xs">
+          <CardHeader className="space-y-2 pb-2">
+            <div className="flex items-center justify-between">
+              <div className="bg-primary/10 border-accent/30 text-primary flex size-10 items-center justify-center rounded-xl border">
+                <ShoppingBag className="text-accent size-5" />
+              </div>
+              <span className="text-foreground font-serif text-2xl font-bold">
+                {totalActiveOrders}
+              </span>
+            </div>
+            <CardTitle className="text-primary font-serif text-lg">Active Orders</CardTitle>
+            <CardDescription className="font-sans text-xs">
+              {totalActiveOrders === 0
+                ? "No suits currently in stitching."
+                : `${totalActiveOrders} active ${totalActiveOrders === 1 ? "suit" : "suits"} in progress.`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <Button asChild variant="outline" size="sm" className="w-full gap-1.5 text-xs">
+              <Link href="/app/orders">
+                <span>View Orders</span>
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Measurements Card */}
         <Card className="border-border bg-card flex flex-col justify-between shadow-xs">
           <CardHeader className="space-y-2 pb-2">

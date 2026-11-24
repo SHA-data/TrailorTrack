@@ -67,9 +67,15 @@ interface AccessClientProps {
   pendingRequests: PendingRequestItem[];
   accessList: AccessHistoryItem[];
   activityLogs: ActivityLogItem[];
+  openOrdersShopIds?: string[];
 }
 
-export function AccessClient({ pendingRequests, accessList, activityLogs }: AccessClientProps) {
+export function AccessClient({
+  pendingRequests,
+  accessList,
+  activityLogs,
+  openOrdersShopIds = [],
+}: AccessClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"requests" | "active" | "activity">("requests");
   const [isPending, startTransition] = useTransition();
@@ -551,7 +557,13 @@ export function AccessClient({ pendingRequests, accessList, activityLogs }: Acce
             <DialogDescription className="text-muted-foreground pt-1 font-sans text-xs">
               Are you sure you want to revoke access for{" "}
               <strong>{revokingConsent?.shop_name}</strong>? They will immediately lose access to
-              your measurements.
+              your live measurements and cannot create new orders.
+              {revokingConsent && openOrdersShopIds.includes(revokingConsent.shop_id) && (
+                <span className="mt-2 block rounded border border-amber-500/20 bg-amber-500/10 p-2 text-[11px] font-medium text-amber-800">
+                  Notice: You have active orders with this shop. The shop will still be able to
+                  fulfill and update these existing orders until delivered.
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">

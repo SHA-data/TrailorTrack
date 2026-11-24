@@ -16,6 +16,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/marketing/logo";
 import { AccessBadge } from "@/components/customer/access-badge";
+import { NotificationBell } from "@/components/customer/notification-bell";
 
 export const instant = false;
 
@@ -45,6 +46,13 @@ export default async function CustomerLayout({ children }: CustomerLayoutProps) 
     redirect("/tailor");
   }
 
+  // Fetch unread notification count
+  const { count: unreadCount } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .is("read_at", null);
+
   // Desktop navigation items
   const desktopNavItems = [
     { label: "Home", href: "/app", icon: Home },
@@ -64,18 +72,21 @@ export default async function CustomerLayout({ children }: CustomerLayoutProps) 
         <div className="space-y-6">
           <Logo />
 
-          <div className="bg-background border-border/70 flex items-center gap-2.5 rounded-xl border p-3">
-            <div className="bg-primary/10 border-accent/30 text-primary flex size-8 items-center justify-center rounded-full border font-serif text-sm font-bold">
-              {profile?.full_name?.charAt(0) || "C"}
+          <div className="bg-background border-border/70 flex items-center justify-between gap-2.5 rounded-xl border p-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <div className="bg-primary/10 border-accent/30 text-primary flex size-8 items-center justify-center rounded-full border font-serif text-sm font-bold">
+                {profile?.full_name?.charAt(0) || "C"}
+              </div>
+              <div className="flex min-w-0 flex-col">
+                <span className="text-foreground truncate text-xs font-semibold">
+                  {profile?.full_name || "Customer"}
+                </span>
+                <span className="text-accent text-[10px] font-medium tracking-wider uppercase">
+                  Digital Passport
+                </span>
+              </div>
             </div>
-            <div className="flex min-w-0 flex-col">
-              <span className="text-foreground truncate text-xs font-semibold">
-                {profile?.full_name || "Customer"}
-              </span>
-              <span className="text-accent text-[10px] font-medium tracking-wider uppercase">
-                Digital Passport
-              </span>
-            </div>
+            <NotificationBell initialCount={unreadCount || 0} />
           </div>
 
           <nav className="flex flex-col space-y-1.5" aria-label="Customer Navigation">
@@ -114,13 +125,16 @@ export default async function CustomerLayout({ children }: CustomerLayoutProps) 
         {/* Mobile Header Bar */}
         <header className="border-border/80 bg-background/90 sticky top-0 z-40 flex items-center justify-between border-b px-4 py-3 backdrop-blur-md md:hidden">
           <Logo />
-          <Link
-            href="/app/passport"
-            className="border-accent/40 bg-primary/10 text-primary flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold"
-          >
-            <QrCode className="text-accent size-3.5" />
-            <span>Passport</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <NotificationBell initialCount={unreadCount || 0} />
+            <Link
+              href="/app/passport"
+              className="border-accent/40 bg-primary/10 text-primary flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold"
+            >
+              <QrCode className="text-accent size-3.5" />
+              <span>Passport</span>
+            </Link>
+          </div>
         </header>
 
         {/* Content Body */}

@@ -2,12 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  allowedDevOrigins: [
-    "192.168.1.15",
-    "192.168.1.15:3000",
-    "localhost:3000",
-    "127.0.0.1:3000",
-  ],
+  allowedDevOrigins: ["192.168.1.15", "192.168.1.15:3000", "localhost:3000", "127.0.0.1:3000"],
   cacheComponents: true,
   partialPrefetching: true,
   experimental: {
@@ -15,11 +10,7 @@ const nextConfig: NextConfig = {
       validationLevel: "manual-warning",
     },
     serverActions: {
-      allowedOrigins: [
-        "localhost:3000",
-        "127.0.0.1:3000",
-        "192.168.1.15:3000",
-      ],
+      allowedOrigins: ["localhost:3000", "127.0.0.1:3000", "192.168.1.15:3000"],
     },
   },
   turbopack: {

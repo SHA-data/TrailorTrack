@@ -2,14 +2,32 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Clock, User, Users, Phone, MapPin } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  User,
+  Users,
+  Phone,
+  MapPin,
+  Plus,
+  ShoppingBag,
+  ExternalLink,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ALL_GARMENTS, GARMENTS_BY_CATEGORY } from "@/lib/measurements/templates";
 import { formatMeasurement } from "@/lib/measurements/units";
 import { logMeasurementViewAction } from "@/lib/access/actions";
-import type { FitCategory, GarmentType, ConsentScope, PreferredUnit } from "@/types/database";
+import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import { formatPKR, formatKarachiDate } from "@/lib/format";
+import type {
+  FitCategory,
+  GarmentType,
+  ConsentScope,
+  PreferredUnit,
+  OrderStatus,
+} from "@/types/database";
 
 interface ConsentedCustomerData {
   customer_id: string;
@@ -38,11 +56,22 @@ interface MeasurementSetSummary {
   taken_on: string;
 }
 
+interface CustomerOrderSummary {
+  id: string;
+  order_seq: number;
+  status: OrderStatus;
+  total_pkr: number;
+  paid_pkr: number;
+  delivery_date: string;
+  created_at: string;
+}
+
 interface CustomerDetailClientProps {
   customer: ConsentedCustomerData;
   familyMembers: FamilyMemberItem[];
   measurementSets: MeasurementSetSummary[];
   preferredUnit: PreferredUnit;
+  orders?: CustomerOrderSummary[];
 }
 
 export function CustomerDetailClient({
@@ -50,6 +79,7 @@ export function CustomerDetailClient({
   familyMembers,
   measurementSets,
   preferredUnit,
+  orders = [],
 }: CustomerDetailClientProps) {
   const [selectedPersonId, setSelectedPersonId] = useState<string>("me");
   const [currentTimestamp] = useState(() => Date.now());
@@ -90,6 +120,8 @@ export function CustomerDetailClient({
     0,
     Math.ceil((new Date(customer.expires_at).getTime() - currentTimestamp) / (1000 * 60 * 60 * 24))
   );
+
+  const hasOrdersScope = customer.scopes.includes("orders");
 
   return (
     <div className="space-y-6">
@@ -134,13 +166,30 @@ export function CustomerDetailClient({
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5 sm:items-end">
+          <div className="flex flex-col gap-2 sm:items-end">
             <div className="text-muted-foreground border-border/80 bg-muted/40 flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium">
               <Clock className="text-accent size-3.5" />
               <span>
                 Access active, expires in {daysLeft} {daysLeft === 1 ? "day" : "days"}
               </span>
             </div>
+
+            {hasOrdersScope ? (
+              <Button
+                asChild
+                size="sm"
+                className="bg-primary text-primary-foreground text-xs shadow-xs"
+              >
+                <Link href={`/tailor/orders/new?customerId=${customer.customer_id}`}>
+                  <Plus className="mr-1.5 size-3.5" />
+                  Create New Order
+                </Link>
+              </Button>
+            ) : (
+              <p className="text-muted-foreground text-[11px] italic">
+                Orders scope required to book new orders
+              </p>
+            )}
           </div>
         </div>
 
@@ -153,6 +202,69 @@ export function CustomerDetailClient({
             </Badge>
           ))}
         </div>
+      </Card>
+
+      {/* Orders for this Client Section */}
+      <Card className="border-border bg-card space-y-4 p-6 shadow-xs">
+        <div className="flex items-center justify-between">
+          <h2 className="text-foreground flex items-center gap-2 font-serif text-lg font-bold">
+            <ShoppingBag className="text-primary size-4" />
+            Orders for this Client ({orders.length})
+          </h2>
+          {hasOrdersScope && (
+            <Button asChild variant="outline" size="sm" className="text-xs">
+              <Link href={`/tailor/orders/new?customerId=${customer.customer_id}`}>
+                <Plus className="mr-1 size-3" />
+                New Order
+              </Link>
+            </Button>
+          )}
+        </div>
+
+        {orders.length === 0 ? (
+          <p className="text-muted-foreground py-2 text-xs italic">
+            No orders created for this client yet.
+          </p>
+        ) : (
+          <div className="divide-border/60 divide-y">
+            {orders.map((ord) => (
+              <div
+                key={ord.id}
+                className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/tailor/orders/${ord.id}`}
+                      className="text-primary flex items-center gap-1 font-mono text-xs font-semibold hover:underline"
+                    >
+                      <span>Order #{String(ord.order_seq).padStart(4, "0")}</span>
+                      <ExternalLink className="size-3" />
+                    </Link>
+                    <OrderStatusBadge status={ord.status} />
+                  </div>
+                  <p className="text-muted-foreground mt-0.5 text-[11px]">
+                    Due {formatKarachiDate(ord.delivery_date)} • Booked{" "}
+                    {formatKarachiDate(ord.created_at)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 text-xs">
+                  <div className="text-right">
+                    <p className="text-foreground font-mono font-semibold">
+                      {formatPKR(ord.total_pkr)}
+                    </p>
+                    <p className="text-muted-foreground text-[10px]">
+                      Paid: {formatPKR(ord.paid_pkr)}
+                    </p>
+                  </div>
+                  <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
+                    <Link href={`/tailor/orders/${ord.id}`}>View</Link>
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
 
       {/* Person Switcher Chips */}
@@ -168,7 +280,7 @@ export function CustomerDetailClient({
             }`}
           >
             <User className="size-3.5" />
-            <span>{customer.full_name} (Me)</span>
+            <span>{customer.full_name} (Client)</span>
           </button>
 
           {familyMembers.map((member) => (
@@ -190,12 +302,10 @@ export function CustomerDetailClient({
         </div>
       </div>
 
-      {/* Garment Measurements Grid */}
+      {/* Garment Measurements Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-primary font-serif text-xl font-bold">
-            Garment Measurements ({currentPerson.name})
-          </h2>
+          <h2 className="text-foreground font-serif text-xl font-bold">{currentPerson.name}</h2>
           <Badge variant="outline" className="text-xs uppercase">
             Unit: {preferredUnit}
           </Badge>

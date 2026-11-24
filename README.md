@@ -1,4 +1,5 @@
 # TailorTrack 🪡
+
 > **A digital tailoring passport made for Pakistan.**
 > Customer-owned measurement passport, family profiles, QR access handshake, and bespoke tailoring studio.
 
@@ -7,12 +8,14 @@
 ## 🌟 Overview
 
 In Pakistan, bespoke tailoring is a cultural staple — from everyday Shalwar Kameez to Eid Kurta Pajamas and wedding Sherwanis. However, tailoring transactions have long suffered from:
+
 - Lost or illegible physical paper measurement diaries (`register`)
 - Re-measuring fatigue across different boutique tailors
 - Style and collar disputes (`bain` vs `coller`, `pancha` width, `teera`)
 - Unclear turnaround dates and lack of versioned measurement history
 
 **TailorTrack** transforms this experience into a luxury digital passport:
+
 - **Customer Sovereignty**: You own your measurements. Tailors only see what you explicitly approve.
 - **Family Profiles**: Manage measurements for spouse, children, parents, and siblings under one account.
 - **Biometric-Grade Privacy**: QR scans expose **zero sensitive data** (only a masked name like `"Tariq M."`). Tailors cannot view phone numbers, addresses, or measurement history without your interactive approval.
@@ -47,6 +50,7 @@ sequenceDiagram
 ```
 
 ### Core Security Invariants
+
 1. **Zero Direct Discovery Queries**: Tailors can never query `customers`, `profiles`, or `consents` directly for discovery. All discovery flows through `SECURITY DEFINER` RPCs with `search_path = ''`.
 2. **Strict Consent State Machine**: Database triggers enforce allowed transitions:
    $$\text{pending} \longrightarrow \{\text{active},\, \text{declined}\}, \quad \text{active} \longrightarrow \text{revoked}$$
@@ -62,18 +66,18 @@ sequenceDiagram
 
 TailorTrack uses authentic Pakistani tailoring terminology with fractional precision (eighths, quarters, halves):
 
-| Term | Local Name | Description |
-| :--- | :--- | :--- |
-| **Length** | *Lambai* (لمبائی) | Total length from neck shoulder point to hem |
-| **Shoulder** | *Teera* (تیرا) | Shoulder bone to shoulder bone across back |
-| **Chest** | *Chhati* (چھاتی) | Fullest point around chest / bust |
-| **Waist** | *Kamar* (کمر) | Natural waistline measurement |
-| **Hip / Seat** | *Gheera* (گھیرا) | Circumference around the fullest part of hips |
-| **Daman** | *Daman* (دامن) | Bottom width / flair of the Kameez |
-| **Sleeve** | *Astin* (آستین) | Shoulder point over elbow to wrist bone |
-| **Collar** | *Gala / Bain* (بین / کالر) | Neck circumference for band or shirt collar |
-| **Armhole** | *Mondha* (مونڈھا) | Curved armhole depth |
-| **Bottom Opening**| *Pancha* (پانچہ) | Shalwar / Trouser bottom hem circumference |
+| Term               | Local Name                 | Description                                   |
+| :----------------- | :------------------------- | :-------------------------------------------- |
+| **Length**         | _Lambai_ (لمبائی)          | Total length from neck shoulder point to hem  |
+| **Shoulder**       | _Teera_ (تیرا)             | Shoulder bone to shoulder bone across back    |
+| **Chest**          | _Chhati_ (چھاتی)           | Fullest point around chest / bust             |
+| **Waist**          | _Kamar_ (کمر)              | Natural waistline measurement                 |
+| **Hip / Seat**     | _Gheera_ (گھیرا)           | Circumference around the fullest part of hips |
+| **Daman**          | _Daman_ (دامن)             | Bottom width / flair of the Kameez            |
+| **Sleeve**         | _Astin_ (آستین)            | Shoulder point over elbow to wrist bone       |
+| **Collar**         | _Gala / Bain_ (بین / کالر) | Neck circumference for band or shirt collar   |
+| **Armhole**        | _Mondha_ (مونڈھا)          | Curved armhole depth                          |
+| **Bottom Opening** | _Pancha_ (پانچہ)           | Shalwar / Trouser bottom hem circumference    |
 
 ---
 
@@ -114,6 +118,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-publishable-key>
 ### 3. Run Database Migrations
 
 Apply the plain SQL migrations in sequence in your **Supabase SQL Editor**:
+
 1. `supabase/migrations/0001_core.sql` — Profiles, customers, tailor shops, core triggers, and RLS.
 2. `supabase/migrations/0002_measurements.sql` — Family members, append-only measurement sets, and measurement RLS.
 3. `supabase/migrations/0003_access_flow.sql` — Consent state machine, access audit log, lookup throttle, and 10 SECURITY DEFINER RPCs.
@@ -121,6 +126,7 @@ Apply the plain SQL migrations in sequence in your **Supabase SQL Editor**:
 ### 4. Verify Database Security Policies
 
 Run the verification suites directly in the Supabase SQL Editor:
+
 - `supabase/tests/rls_checks.sql` (Phase 2 baseline)
 - `supabase/tests/rls_checks_phase3.sql` (Phase 3 measurement integrity)
 - `supabase/tests/rls_checks_phase4.sql` (Phase 4 consent state machine & audit log)

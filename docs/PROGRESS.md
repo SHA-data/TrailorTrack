@@ -228,13 +228,52 @@ npm run build
 
 ---
 
-### 2. Checklist for Phase 5: Order Creation & Order Lifecycle Management
+## Phase 5: Orders, Status Tracking, In-App Notifications & Live Dashboards (Completed)
 
-- [ ] Database migration for orders:
-  - `orders` table (customer_id, shop_id, garment_type, measurement_snapshot jsonb, fabric_notes, delivery_date, status, total_price, advance_paid)
-  - `order_status_history` table (order_id, from_status, to_status, notes, changed_by, created_at)
-  - Milestones: `received` -> `cutting` -> `stitching` -> `trial_fitting` -> `ready` -> `delivered`
-- [ ] Tailor order creation form with measurement snapshot selection
-- [ ] Live milestone order tracking screen for customers and tailors
-- [ ] WhatsApp status update notifications
+### 1. What Was Built
 
+- **Phase 4 Hardening & Cleanup (Tasks 0.1 – 0.6)**:
+  - Scrubbed all overclaiming marketing phrases (`zero-knowledge`, `military-grade`, `100% verified`) across UI copy, content files, and docs; replaced with factual terms (`consent-based access`, `permission-controlled`).
+  - Replaced misleading "Verified Client" badge with factual `Clock` badge: `"Access active, expires in N days"`.
+  - Refactored token gateway (`/t/[token]`): strictly differentiates `not_found`, `rate_limited`, and `unexpected_error`. Prevents database or auth errors from masking as missing tokens.
+  - Gateway live polling halts automatically when tab is hidden and times out safely after 10 minutes with a resume action button.
+  - Transparent consent disclosure: added plain-language sentence in customer approval modal explicitly enumerating all shared data attributes (`full_name`, `phone`, `city`, `fit_category`).
+  - Rewrote Phase 4 test suite (`supabase/tests/rls_checks_phase4.sql`) with full PostgREST JWT claim simulation (`sub` and `role`), genuine cooldown validation via historical pre-declined timestamps, expiry verification, and dynamic counter reporting `"ALL N CHECKS PASSED"`.
+
+- **Database Architecture & Migrations (`0005_orders_schema.sql` & `0006_orders_rpcs.sql`)**:
+  - `orders`: `id`, `shop_id`, `customer_id`, `family_member_id`, `person_label`, `shop_name`, `shop_city`, `shop_phone`, `order_seq` (per-shop human friendly #0001+), `status`, `total_pkr`, `paid_pkr`, `delivery_date`, `created_at`, `status_changed_at`, `closed_at`.
+  - `order_items`: 1 to 6 garments per order with `garment_type`, `quantity`, `fabric_source ('customer', 'shop')`, `fabric_details`, `fabric_metres`, `design_notes`.
+  - `order_item_measurements`: Server-side frozen snapshot copying measurements at creation; invisible to client writes.
+  - `order_events`: Append-only audit trail recording `created`, `status_changed`, `delivery_rescheduled`, `price_changed`, `payment_recorded` with actor UID and timestamp.
+  - `notifications`: Machine-readable notifications with `user_id`, `kind`, `data` jsonb, `order_id`, and `read_at`.
+  - `shop_order_counters`: Per-shop sequential integer counters with atomic row locking.
+  - Pipeline trigger `trg_orders_update_rules`: Enforces forward status transitions (`received -> cutting -> stitching -> ready -> delivered`), terminal delivered/cancelled states, cancellation from open states only, and post-delivery payment recording.
+  - 7 Security Definer RPCs (`search_path = ''`): `create_order`, `update_order_status`, `reschedule_order`, `change_order_price`, `record_payment`, `mark_notifications_read`, `shop_dashboard_stats`.
+  - Strict RLS policies and revocation of INSERT/UPDATE/DELETE from authenticated and anon across all new tables.
+
+- **Automated Verification Suite (`supabase/tests/rls_checks_phase5.sql`)**:
+  - Comprehensive assertions across Domains A through J covering order creation without orders scope (blocked), with orders scope (succeeds), missing measurements scope (blocked when attaching measurements), status forward progression, terminal state immutability, post-delivery payment, append-only event protections, notification privacy, and calendar-accurate dashboard stats in `Asia/Karachi`.
+
+- **Tailor Suite & Management Interfaces**:
+  - `/tailor/orders`: Interactive Kanban board with columns (`Received`, `Cutting`, `Stitching`, `Ready`), quick milestone advance buttons, live search, Karachi calendar filter chips (`Today`, `Next 7 Days`, `Overdue`), and a paginated closed tab (`Delivered`, `Cancelled`).
+  - `/tailor/orders/new`: 5-step stepper (Client selection, Person selection, Garments & fabric with measurement set attachment, Pricing & Delivery date, and Review & Book).
+  - `/tailor/orders/[id]`: Full order cockpit with milestone progression dialog, payment recording modal, reschedule modal, price adjustment modal, measurement snapshot viewer, and audit timeline.
+  - `/tailor/customers/[customerId]`: Added "Orders for this Client" section, "Create New Order" action gate (requiring orders scope), and expired consent fallback displaying active orders.
+  - `/tailor`: Real-time operational dashboard powered by `shop_dashboard_stats()` RPC with pipeline metrics, due schedule alerts, receivables, monthly throughput in Karachi time, and 5-step interactive workshop checklist.
+
+- **Customer Suite & In-App Tracking**:
+  - `/app/orders`: Active and past order directory with status badges, tailor shop details with direct phone link, target delivery countdowns, and balance tracking.
+  - `/app/orders/[id]`: Live milestone tracker with 30-second auto-refresh while tab is visible, frozen measurement snapshot viewer, newer measurement alerts, bill breakdown, and shop contact card.
+  - `/app/notifications`: In-app notification center grouped by Karachi calendar day, "Mark all read" button, and deep links to corresponding order milestones.
+  - `/app/layout.tsx`: Real-time unread notification bell integration in desktop sidebar and mobile navigation header.
+  - `/app/page.tsx`: Added Active Orders live metric card to customer home.
+  - `/app/access`: Revoke modal displays a clear notice if the customer has open orders with that tailor shop.
+
+---
+
+### 2. Checklist for Phase 6: Interactive 2D & 3D Design Studio and Try-On
+
+- [ ] Interactive 2D Kurta/Kameez configurator with real-time collar, cuff, and pocket geometry customization.
+- [ ] 3D WebGL fabric visualizer and texture draping using Three.js / React Three Fiber.
+- [ ] Saved Design Looks linked to customer profiles and exportable as order design notes.
+- [ ] Tailor design notes parser for fabric and styling specifications.
