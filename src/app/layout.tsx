@@ -24,8 +24,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${dmSans.variable} h-full antialiased`}>
-      <body className="bg-background text-foreground flex min-h-full flex-col font-sans">
+    <html
+      lang="en"
+      className={`${cormorant.variable} ${dmSans.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <body
+        className="bg-background text-foreground flex min-h-full flex-col font-sans"
+        suppressHydrationWarning
+      >
         {children}
         <Toaster richColors position="top-right" />
       </body>
