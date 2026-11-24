@@ -246,10 +246,10 @@ export function PassportCard({
               <DialogTitle className="font-serif text-lg">Reset Passport QR Code?</DialogTitle>
             </div>
             <DialogDescription className="text-muted-foreground space-y-2 pt-1 font-sans text-xs">
-              <p>{accessContent.passport.resetWarning}</p>
-              <p className="text-foreground font-medium">
+              <span className="block">{accessContent.passport.resetWarning}</span>
+              <span className="text-foreground block font-medium">
                 Are you sure you want to invalidate your current QR code?
-              </p>
+              </span>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
