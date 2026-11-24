@@ -59,7 +59,7 @@ function LoginForm() {
         </CardDescription>
       </CardHeader>
 
-      <form onSubmit={handleSubmit}>
+      <form method="POST" onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           {resetSuccess && (
             <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-800 dark:text-emerald-300">
@@ -84,6 +84,7 @@ function LoginForm() {
               name="email"
               type="email"
               autoComplete="email"
+              defaultValue={searchParams.get("email") || ""}
               required
               placeholder="you@domain.pk"
               className="bg-background border-input"

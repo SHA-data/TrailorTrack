@@ -113,7 +113,7 @@ export default function SignUpPage() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form method="POST" onSubmit={handleSubmit} className="space-y-4">
             {errorMessage && (
               <div className="bg-destructive/10 border-destructive/20 text-destructive flex items-center gap-2 rounded-xl border p-3 font-sans text-xs">
                 <AlertCircle className="size-4 shrink-0" />
