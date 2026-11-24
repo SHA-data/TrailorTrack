@@ -1,6 +1,7 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import { headers } from "next/headers";
 import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/server";
 import { PassportCard } from "./passport-card";
@@ -34,7 +35,16 @@ export default async function CustomerPassportPage() {
     redirect("/app");
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  // Dynamically resolve siteUrl from incoming request headers or environment variable
+  const headersList = await headers();
+  const host = headersList.get("x-forwarded-host") || headersList.get("host");
+  const proto = headersList.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+  const detectedUrl = host ? `${proto}://${host}` : "http://localhost:3000";
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")
+      ? process.env.NEXT_PUBLIC_SITE_URL
+      : detectedUrl;
+
   const passportUrl = `${siteUrl}/t/${customer.qr_token}`;
 
   // Generate crisp server-side SVG QR code
