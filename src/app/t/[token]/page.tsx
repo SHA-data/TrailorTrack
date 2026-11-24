@@ -36,7 +36,9 @@ export default async function TokenGatewayPage({ params }: PageProps) {
       const { data, error } = await supabase.rpc("lookup_passport", {
         p_token: token.trim(),
       });
-      if (!error && data) {
+      if (error) {
+        console.error("[lookup_passport error]:", error);
+      } else if (data) {
         initialLookup = data as unknown as LookupData;
       }
     } else {

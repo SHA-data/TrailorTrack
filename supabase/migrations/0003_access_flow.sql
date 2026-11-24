@@ -161,7 +161,11 @@ declare
   v_role text;
   v_shop_id uuid;
 begin
-  v_uid := (nullif(current_setting('request.jwt.claim.sub', true), '')::uuid);
+  v_uid := coalesce(
+    auth.uid(),
+    nullif(current_setting('request.jwt.claim.sub', true), '')::uuid,
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')::uuid
+  );
   if v_uid is null then
     raise exception 'Unauthorized: caller has no authenticated user ID';
   end if;
@@ -192,7 +196,11 @@ declare
   v_role text;
   v_customer_id uuid;
 begin
-  v_uid := (nullif(current_setting('request.jwt.claim.sub', true), '')::uuid);
+  v_uid := coalesce(
+    auth.uid(),
+    nullif(current_setting('request.jwt.claim.sub', true), '')::uuid,
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')::uuid
+  );
   if v_uid is null then
     raise exception 'Unauthorized: caller has no authenticated user ID';
   end if;
