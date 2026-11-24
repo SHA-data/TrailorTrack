@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { rotateQrTokenAction } from "@/lib/access/actions";
 import { accessContent } from "@/lib/content/access-content";
+import { copyToClipboard } from "@/lib/utils";
 
 interface PassportCardProps {
   fullName: string;
@@ -51,12 +52,12 @@ export function PassportCard({
   const [isPending, startTransition] = useTransition();
 
   const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(passportUrl);
+    const success = await copyToClipboard(passportUrl);
+    if (success) {
       setCopied(true);
       toast.success("Passport link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } else {
       toast.error("Failed to copy link");
     }
   };

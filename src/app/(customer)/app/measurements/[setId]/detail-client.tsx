@@ -36,6 +36,7 @@ import {
   updateMeasurementSetNotesAction,
   deleteMeasurementSetAction,
 } from "@/lib/measurements/actions";
+import { copyToClipboard } from "@/lib/utils";
 import type { FitCategory, GarmentType, PreferredUnit } from "@/types/database";
 
 export interface MeasurementSetDetail {
@@ -119,12 +120,12 @@ export function DetailClient({
   };
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(generateTextSummary());
+    const success = await copyToClipboard(generateTextSummary());
+    if (success) {
       setCopiedText(true);
       toast.success("Measurement card copied to clipboard!");
       setTimeout(() => setCopiedText(false), 2500);
-    } catch {
+    } else {
       toast.error("Failed to copy to clipboard");
     }
   };
