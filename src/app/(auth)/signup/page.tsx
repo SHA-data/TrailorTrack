@@ -31,22 +31,26 @@ export default function SignUpPage() {
   const hasNumber = /[0-9]/.test(password);
   const strengthScore = [hasMinLength, hasUppercase, hasNumber].filter(Boolean).length;
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleFormAction = (formData: FormData) => {
     setErrorMessage(null);
     setInfoMessage(null);
-
-    const formData = new FormData(e.currentTarget);
     formData.set("role", role);
 
     startTransition(async () => {
-      const result = await signUpAction(formData);
-      if (result?.error) {
-        setErrorMessage(result.error);
-        toast.error(result.error);
-      } else if (result?.success) {
-        setInfoMessage(result.message || "Account created successfully!");
-        toast.success("Account created!");
+      try {
+        const result = await signUpAction(formData);
+        if (result?.error) {
+          setErrorMessage(result.error);
+          toast.error(result.error);
+        } else if (result?.redirectUrl) {
+          window.location.href = result.redirectUrl;
+        } else if (result?.success) {
+          setInfoMessage(result.message || "Account created successfully!");
+          toast.success("Account created!");
+        }
+      } catch (err) {
+        console.error("Sign-up submission error:", err);
+        setErrorMessage("An unexpected error occurred. Please try again.");
       }
     });
   };
@@ -113,7 +117,14 @@ export default function SignUpPage() {
             </Link>
           </div>
         ) : (
-          <form method="POST" onSubmit={handleSubmit} className="space-y-4">
+          <form
+            action={handleFormAction}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleFormAction(new FormData(e.currentTarget));
+            }}
+            className="space-y-4"
+          >
             {errorMessage && (
               <div className="bg-destructive/10 border-destructive/20 text-destructive flex items-center gap-2 rounded-xl border p-3 font-sans text-xs">
                 <AlertCircle className="size-4 shrink-0" />

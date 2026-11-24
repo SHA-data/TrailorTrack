@@ -30,20 +30,26 @@ function LoginForm() {
   );
   const [isPending, startTransition] = useTransition();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleFormAction = (formData: FormData) => {
     setErrorMessage(null);
 
-    const formData = new FormData(e.currentTarget);
     if (redirectTo) {
       formData.set("redirectTo", redirectTo);
     }
 
     startTransition(async () => {
-      const result = await signInAction(formData);
-      if (result?.error) {
-        setErrorMessage(result.error);
-        toast.error(result.error);
+      try {
+        const result = await signInAction(formData);
+        if (result?.error) {
+          setErrorMessage(result.error);
+          toast.error(result.error);
+        } else if (result?.redirectUrl) {
+          toast.success("Signed in successfully");
+          window.location.href = result.redirectUrl;
+        }
+      } catch (err) {
+        console.error("Sign-in submission error:", err);
+        setErrorMessage("An unexpected error occurred. Please try again.");
       }
     });
   };
@@ -59,7 +65,13 @@ function LoginForm() {
         </CardDescription>
       </CardHeader>
 
-      <form method="POST" onSubmit={handleSubmit}>
+      <form
+        action={handleFormAction}
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleFormAction(new FormData(e.currentTarget));
+        }}
+      >
         <CardContent className="space-y-4">
           {resetSuccess && (
             <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-800 dark:text-emerald-300">

@@ -129,12 +129,15 @@ export async function signInAction(formData: FormData) {
   const rawPassword = formData.get("password") as string;
   const redirectTo = (formData.get("redirectTo") as string) || null;
 
+  console.log("[signInAction] Attempting sign-in for:", rawEmail, "redirectTo:", redirectTo);
+
   const result = signInSchema.safeParse({
     email: rawEmail,
     password: rawPassword,
   });
 
   if (!result.success) {
+    console.log("[signInAction] Zod validation failed:", result.error.issues);
     return { error: "Please enter a valid email and password" };
   }
 
@@ -147,9 +150,11 @@ export async function signInAction(formData: FormData) {
   });
 
   if (error || !data.user) {
-    // Avoid user enumeration: generic error message
+    console.log("[signInAction] Supabase signInWithPassword error:", error?.message);
     return { error: "Invalid email or password" };
   }
+
+  console.log("[signInAction] Supabase auth succeeded for user:", data.user.id);
 
   // Determine user role
   const { data: profile } = await supabase
@@ -162,7 +167,8 @@ export async function signInAction(formData: FormData) {
   const defaultPath = role === "tailor" ? "/tailor" : "/app";
   const targetPath = redirectTo && redirectTo.startsWith("/") ? redirectTo : defaultPath;
 
-  redirect(targetPath);
+  console.log("[signInAction] Determined role:", role, "Redirecting to:", targetPath);
+  return { success: true, redirectUrl: targetPath };
 }
 
 export async function signOutAction() {
