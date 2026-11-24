@@ -26,6 +26,10 @@ export function ScannerClient() {
       const parts = trimmed.split("/t/");
       return parts[1].split("?")[0].split("#")[0].trim();
     }
+    // Reject arbitrary URLs that do not contain a /t/ passport path
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return "";
+    }
     return trimmed;
   };
 
