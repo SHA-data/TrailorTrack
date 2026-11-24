@@ -113,7 +113,12 @@ export async function signUpAction(formData: FormData) {
   // If session is immediately available (e.g. email confirmation disabled in project)
   if (data.session) {
     const targetUrl = role === "tailor" ? "/tailor" : "/app";
-    redirect(targetUrl);
+    return {
+      success: true,
+      needsEmailConfirmation: false,
+      message: "Account created successfully",
+      redirectUrl: targetUrl,
+    };
   }
 
   // If confirmation email was dispatched
@@ -121,6 +126,7 @@ export async function signUpAction(formData: FormData) {
     success: true,
     needsEmailConfirmation: true,
     message: `A verification link has been sent to ${email}. Please check your inbox to complete activation.`,
+    redirectUrl: undefined,
   };
 }
 
