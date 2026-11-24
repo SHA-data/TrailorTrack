@@ -30,7 +30,7 @@ function LoginForm() {
   );
   const [isPending, startTransition] = useTransition();
 
-  const handleFormAction = (formData: FormData) => {
+  const handleAction = (formData: FormData) => {
     setErrorMessage(null);
 
     if (redirectTo) {
@@ -43,11 +43,11 @@ function LoginForm() {
         if (result?.error) {
           setErrorMessage(result.error);
           toast.error(result.error);
-        } else if (result?.redirectUrl) {
-          toast.success("Signed in successfully");
-          window.location.href = result.redirectUrl;
         }
-      } catch (err) {
+      } catch (err: unknown) {
+        if (typeof err === "object" && err !== null && "digest" in err) {
+          throw err;
+        }
         console.error("Sign-in submission error:", err);
         setErrorMessage("An unexpected error occurred. Please try again.");
       }
@@ -65,13 +65,7 @@ function LoginForm() {
         </CardDescription>
       </CardHeader>
 
-      <form
-        action={handleFormAction}
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleFormAction(new FormData(e.currentTarget));
-        }}
-      >
+      <form action={handleAction}>
         <CardContent className="space-y-4">
           {resetSuccess && (
             <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-800 dark:text-emerald-300">
