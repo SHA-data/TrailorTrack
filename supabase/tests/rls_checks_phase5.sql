@@ -232,7 +232,10 @@ begin
 
   -- A.5 Fails with consent missing 'orders' scope
   perform set_config('role', 'postgres', true);
-  update public.consents set scopes = array['measurements'] where id = v_consent_a_id;
+  delete from public.consents where id = v_consent_a_id;
+  insert into public.consents (customer_id, shop_id, status, scopes, requested_scopes, expires_at)
+  values (v_customer_a_id, v_shop_id, 'active', array['measurements'], array['measurements', 'orders'], now() + interval '30 days')
+  returning id into v_consent_a_id;
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
   perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text, 'role', 'authenticated')::text, true);
@@ -252,14 +255,20 @@ begin
 
   -- Restore consent scopes ['measurements', 'orders']
   perform set_config('role', 'postgres', true);
-  update public.consents set scopes = array['measurements', 'orders'] where id = v_consent_a_id;
+  delete from public.consents where id = v_consent_a_id;
+  insert into public.consents (customer_id, shop_id, status, scopes, requested_scopes, expires_at)
+  values (v_customer_a_id, v_shop_id, 'active', array['measurements', 'orders'], array['measurements', 'orders'], now() + interval '30 days')
+  returning id into v_consent_a_id;
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
   perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text, 'role', 'authenticated')::text, true);
 
   -- A.6 Fails with expired consent
   perform set_config('role', 'postgres', true);
-  update public.consents set expires_at = now() - interval '1 day' where id = v_consent_a_id;
+  delete from public.consents where id = v_consent_a_id;
+  insert into public.consents (customer_id, shop_id, status, scopes, requested_scopes, expires_at)
+  values (v_customer_a_id, v_shop_id, 'active', array['measurements', 'orders'], array['measurements', 'orders'], now() - interval '1 day')
+  returning id into v_consent_a_id;
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
   perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text, 'role', 'authenticated')::text, true);
@@ -279,7 +288,10 @@ begin
 
   -- Restore active unexpired consent
   perform set_config('role', 'postgres', true);
-  update public.consents set expires_at = now() + interval '30 days' where id = v_consent_a_id;
+  delete from public.consents where id = v_consent_a_id;
+  insert into public.consents (customer_id, shop_id, status, scopes, requested_scopes, expires_at)
+  values (v_customer_a_id, v_shop_id, 'active', array['measurements', 'orders'], array['measurements', 'orders'], now() + interval '30 days')
+  returning id into v_consent_a_id;
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
   perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text, 'role', 'authenticated')::text, true);
