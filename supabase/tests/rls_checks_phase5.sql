@@ -232,7 +232,7 @@ begin
 
   -- A.5 Fails with consent missing 'orders' scope
   perform set_config('role', 'postgres', true);
-  delete from public.consents where id = v_consent_a_id;
+  update public.consents set status = 'revoked', revoked_at = now() where id = v_consent_a_id;
   insert into public.consents (customer_id, shop_id, status, scopes, requested_scopes, expires_at)
   values (v_customer_a_id, v_shop_id, 'active', array['measurements'], array['measurements', 'orders'], now() + interval '30 days')
   returning id into v_consent_a_id;
@@ -255,7 +255,7 @@ begin
 
   -- Restore consent scopes ['measurements', 'orders']
   perform set_config('role', 'postgres', true);
-  delete from public.consents where id = v_consent_a_id;
+  update public.consents set status = 'revoked', revoked_at = now() where id = v_consent_a_id;
   insert into public.consents (customer_id, shop_id, status, scopes, requested_scopes, expires_at)
   values (v_customer_a_id, v_shop_id, 'active', array['measurements', 'orders'], array['measurements', 'orders'], now() + interval '30 days')
   returning id into v_consent_a_id;
@@ -265,7 +265,7 @@ begin
 
   -- A.6 Fails with expired consent
   perform set_config('role', 'postgres', true);
-  delete from public.consents where id = v_consent_a_id;
+  update public.consents set status = 'revoked', revoked_at = now() where id = v_consent_a_id;
   insert into public.consents (customer_id, shop_id, status, scopes, requested_scopes, expires_at)
   values (v_customer_a_id, v_shop_id, 'active', array['measurements', 'orders'], array['measurements', 'orders'], now() - interval '1 day')
   returning id into v_consent_a_id;
@@ -288,7 +288,7 @@ begin
 
   -- Restore active unexpired consent
   perform set_config('role', 'postgres', true);
-  delete from public.consents where id = v_consent_a_id;
+  update public.consents set status = 'revoked', revoked_at = now() where id = v_consent_a_id;
   insert into public.consents (customer_id, shop_id, status, scopes, requested_scopes, expires_at)
   values (v_customer_a_id, v_shop_id, 'active', array['measurements', 'orders'], array['measurements', 'orders'], now() + interval '30 days')
   returning id into v_consent_a_id;
