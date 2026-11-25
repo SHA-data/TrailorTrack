@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -17,9 +17,22 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#1F4D3A",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata: Metadata = {
   title: "TailorTrack — Digital Tailoring Passport",
-  description: "Customer-owned digital tailoring passport and management platform",
+  description: "Customer-owned digital tailoring passport made for Pakistan",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "TailorTrack",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
