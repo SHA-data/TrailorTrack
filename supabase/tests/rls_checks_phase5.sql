@@ -12,7 +12,11 @@
 -- H. Financial invariants & payment recording
 -- I. Shop dashboard stats & Asia/Karachi date filtering
 -- J. Function execution privileges (anon/public lockout)
+-- Wrapped in BEGIN / ROLLBACK so all test fixtures (including append-only
+-- order_events and restricted orders) are cleanly rolled back at the end.
 -- ============================================================================
+
+begin;
 
 do $$
 declare
@@ -814,18 +818,14 @@ begin
   end if;
 
   -- ----------------------------------------------------------------------------
-  -- CLEANUP
+  -- CLEANUP (handled by outer ROLLBACK so append-only order_events stay intact)
   -- ----------------------------------------------------------------------------
   perform set_config('role', 'postgres', true);
-  delete from auth.users where id in (v_user_a, v_user_b, v_tailor, v_tailor_b);
 
   raise notice '==============================================================';
   raise notice 'ALL % CHECKS PASSED', v_check_count;
   raise notice '==============================================================';
-
-exception when others then
-  perform set_config('role', 'postgres', true);
-  delete from auth.users where id in (v_user_a, v_user_b, v_tailor, v_tailor_b);
-  raise;
 end;
 $$;
+
+rollback;
