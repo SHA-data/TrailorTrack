@@ -2,16 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import {
-  Home,
-  Ruler,
-  Users,
-  ShoppingBag,
-  User,
-  ShieldCheck,
-  QrCode,
-  KeyRound,
-} from "lucide-react";
+import { Home, Ruler, Users, ShoppingBag, User, ShieldCheck, QrCode, KeyRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/marketing/logo";
 import { AccessBadge } from "@/components/customer/access-badge";

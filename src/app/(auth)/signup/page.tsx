@@ -278,6 +278,18 @@ export default function SignUpPage() {
                   ? "Register Tailor Shop"
                   : "Create Customer Passport"}
             </Button>
+
+            <p className="text-muted-foreground pt-1 text-center font-sans text-[11px] leading-relaxed">
+              By creating an account, you agree to our{" "}
+              <Link href="/terms" className="text-primary underline underline-offset-2">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="text-primary underline underline-offset-2">
+                Privacy Policy
+              </Link>
+              .
+            </p>
           </form>
         )}
       </CardContent>

@@ -14,7 +14,7 @@ import { Plus, Search, ArrowRight, Archive } from "lucide-react";
 
 interface OrderListItem {
   id: string;
-  shop_id: string;
+  shop_id: string | null;
   customer_id: string;
   person_label: string;
   shop_name: string;

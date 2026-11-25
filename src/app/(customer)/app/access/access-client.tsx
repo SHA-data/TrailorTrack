@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useTransition, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -488,30 +489,30 @@ export function AccessClient({
                       scope === "measurements" || scope === "orders"
                   )
                   .map((scope) => {
-                  const isChecked = selectedScopes.includes(scope);
-                  return (
-                    <label
-                      key={scope}
-                      className="hover:bg-muted/50 flex cursor-pointer items-center gap-2.5 rounded-md border p-2 text-xs"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => {
-                          if (isChecked) {
-                            if (selectedScopes.length > 1) {
-                              setSelectedScopes(selectedScopes.filter((s) => s !== scope));
+                    const isChecked = selectedScopes.includes(scope);
+                    return (
+                      <label
+                        key={scope}
+                        className="hover:bg-muted/50 flex cursor-pointer items-center gap-2.5 rounded-md border p-2 text-xs"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => {
+                            if (isChecked) {
+                              if (selectedScopes.length > 1) {
+                                setSelectedScopes(selectedScopes.filter((s) => s !== scope));
+                              }
+                            } else {
+                              setSelectedScopes([...selectedScopes, scope]);
                             }
-                          } else {
-                            setSelectedScopes([...selectedScopes, scope]);
-                          }
-                        }}
-                        className="border-input text-primary focus:ring-primary rounded"
-                      />
-                      <span>{accessContent.access.scopes[scope] || scope}</span>
-                    </label>
-                  );
-                })}
+                          }}
+                          className="border-input text-primary focus:ring-primary rounded"
+                        />
+                        <span>{accessContent.access.scopes[scope] || scope}</span>
+                      </label>
+                    );
+                  })}
               </div>
 
               {/* Duration select */}
@@ -530,6 +531,18 @@ export function AccessClient({
                   <option value={365}>{accessContent.access.durations[365]}</option>
                 </select>
               </div>
+
+              <p className="text-muted-foreground text-[11px] leading-relaxed">
+                See our{" "}
+                <Link href="/privacy" className="text-primary underline underline-offset-2">
+                  Privacy Policy
+                </Link>{" "}
+                and{" "}
+                <Link href="/terms" className="text-primary underline underline-offset-2">
+                  Terms of Service
+                </Link>{" "}
+                for details on how consent and order snapshots work.
+              </p>
             </div>
           )}
 

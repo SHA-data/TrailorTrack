@@ -58,7 +58,8 @@ export const ordersContent = {
   },
   customer: {
     listTitle: "My Orders",
-    listSubtitle: "Track your garments across each stitching stage (updates about every 30 seconds while open).",
+    listSubtitle:
+      "Track your garments across each stitching stage (updates about every 30 seconds while open).",
     tabs: {
       active: "Active Orders",
       past: "Order History",

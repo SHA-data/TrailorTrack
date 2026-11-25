@@ -214,8 +214,7 @@ export function DataControlCard({ role, userEmail }: DataControlCardProps) {
                 variant="destructive"
                 size="sm"
                 disabled={
-                  isDeleting ||
-                  confirmEmail.trim().toLowerCase() !== userEmail.trim().toLowerCase()
+                  isDeleting || confirmEmail.trim().toLowerCase() !== userEmail.trim().toLowerCase()
                 }
                 className="gap-2"
               >

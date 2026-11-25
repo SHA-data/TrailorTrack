@@ -55,7 +55,9 @@ export default async function AccessPage() {
     .eq("customer_id", customer.id)
     .in("status", ["received", "cutting", "stitching", "ready"]);
 
-  const openOrdersShopIds = Array.from(new Set((openOrders || []).map((o) => o.shop_id)));
+  const openOrdersShopIds = Array.from(
+    new Set((openOrders || []).map((o) => o.shop_id).filter((id): id is string => Boolean(id)))
+  );
 
   type LogQueryRow = {
     id: string;

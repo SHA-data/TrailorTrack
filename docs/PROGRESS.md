@@ -259,21 +259,47 @@ npm run build
   - `/tailor/orders/new`: 5-step stepper (Client selection, Person selection, Garments & fabric with measurement set attachment, Pricing & Delivery date, and Review & Book).
   - `/tailor/orders/[id]`: Full order cockpit with milestone progression dialog, payment recording modal, reschedule modal, price adjustment modal, measurement snapshot viewer, and audit timeline.
   - `/tailor/customers/[customerId]`: Added "Orders for this Client" section, "Create New Order" action gate (requiring orders scope), and expired consent fallback displaying active orders.
-  - `/tailor`: Real-time operational dashboard powered by `shop_dashboard_stats()` RPC with pipeline metrics, due schedule alerts, receivables, monthly throughput in Karachi time, and 5-step interactive workshop checklist.
+  - `/tailor`: Operational dashboard powered by `shop_dashboard_stats()` RPC with pipeline metrics, due schedule alerts, receivables, monthly throughput in Karachi time, and 5-step interactive workshop checklist.
 
 - **Customer Suite & In-App Tracking**:
   - `/app/orders`: Active and past order directory with status badges, tailor shop details with direct phone link, target delivery countdowns, and balance tracking.
-  - `/app/orders/[id]`: Live milestone tracker with 30-second auto-refresh while tab is visible, frozen measurement snapshot viewer, newer measurement alerts, bill breakdown, and shop contact card.
+  - `/app/orders/[id]`: Milestone tracker that refreshes about every 30 seconds while tab is visible, frozen measurement snapshot viewer, newer measurement alerts, bill breakdown, and shop contact card.
   - `/app/notifications`: In-app notification center grouped by Karachi calendar day, "Mark all read" button, and deep links to corresponding order milestones.
-  - `/app/layout.tsx`: Real-time unread notification bell integration in desktop sidebar and mobile navigation header.
+  - `/app/layout.tsx`: Unread notification bell integration in desktop sidebar and mobile navigation header.
   - `/app/page.tsx`: Added Active Orders live metric card to customer home.
   - `/app/access`: Revoke modal displays a clear notice if the customer has open orders with that tailor shop.
 
+### 2. Phase 5 Known Limitations
+
+- No tailor-entered measurement creation from the tailor portal (customers manage their own measurement sets).
+- No status undo once an order advances along the pipeline.
+- No customer-initiated cancellation requests (tailors cancel open orders directly).
+- No email notifications (in-app notifications only).
+- No automated cleanup/archival job for read notifications.
+
 ---
 
-### 2. Checklist for Phase 6: Interactive 2D & 3D Design Studio and Try-On
+## Phase 6: Scope Reduction, Account Lifecycle & Legal (Completed)
 
-- [ ] Interactive 2D Kurta/Kameez configurator with real-time collar, cuff, and pocket geometry customization.
-- [ ] 3D WebGL fabric visualizer and texture draping using Three.js / React Three Fiber.
-- [ ] Saved Design Looks linked to customer profiles and exportable as order design notes.
-- [ ] Tailor design notes parser for fabric and styling specifications.
+### 1. What Was Built
+
+- **Phase 5 Gap Closure & Scope Reduction**:
+  - Removed all 2D/3D Design Studio, live try-on, and `saved_looks` UI, routes (`/app/studio`), marketing sections, and overclaiming wording across `src/` and `docs/Project_Brief.md`.
+  - Updated `supabase/tests/rls_checks_phase4.sql` and `supabase/tests/rls_checks_phase5.sql` with `has_function_privilege` checks and terminal-state immutability tests.
+- **Account Lifecycle Migration & Tests (`0007_account_lifecycle.sql`, `rls_checks_phase6.sql`)**:
+  - Updated foreign keys (`measurement_sets.shop_id`, `orders.shop_id`, `orders.family_member_id`, `order_events.actor_user_id`) and triggers for safe account deletion cascades and delivered-order tightening.
+  - Added `delete_my_account()` and `export_my_data()` SECURITY DEFINER RPCs.
+- **Data Export & Account Deletion UI**:
+  - `src/lib/account/actions.ts` and `src/components/shared/data-control-card.tsx` wired into `/app/profile` and `/tailor/shop`.
+- **Privacy Policy & Terms of Service**:
+  - Factual legal copy in `src/lib/content/legal.ts` rendered on `/privacy` and `/terms`, linked from signup, footer, and consent approval screens.
+
+---
+
+## Phase 7: Production Launch & Final QA (Checklist)
+
+- [ ] PWA installability (`manifest.ts`, icons, mobile meta tags)
+- [ ] Keep-alive job for free-tier Supabase project
+- [ ] Vercel production deployment & environment variables check
+- [ ] Security headers (`CSP`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`)
+- [ ] Final end-to-end QA across mobile and desktop viewports
