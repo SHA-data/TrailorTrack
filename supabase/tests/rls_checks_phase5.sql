@@ -203,12 +203,13 @@ begin
   perform set_config('request.jwt.claim.sub', v_tailor::text, true);
   perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text, 'role', 'authenticated')::text, true);
 
-  select (oim.values->>'length')::numeric into v_count
+  select count(*) into v_count
   from public.order_item_measurements oim
   join public.order_items oi on oi.id = oim.item_id
-  where oi.order_id = v_order_id;
+  where oi.order_id = v_order_id
+    and (oim.values->>'length')::numeric = 42.5;
 
-  if v_count = 42.5 then
+  if v_count = 1 then
     v_check_count := v_check_count + 1;
     raise notice 'CHECK %: PASS - Measurement snapshot is independent of subsequent measurement_set updates', v_check_count;
   else
