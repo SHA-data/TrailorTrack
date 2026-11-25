@@ -65,7 +65,7 @@ export function HeroVisual() {
                 Customer Passport
               </span>
               <span className="flex items-center gap-1 text-[10px] text-[#f7f1e3]/80">
-                <Check className="text-accent size-3" /> Verified
+                <Check className="text-accent size-3" /> Consent Active
               </span>
             </div>
             <div className="flex items-center gap-2">

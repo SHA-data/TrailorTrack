@@ -662,6 +662,33 @@ begin
     raise exception 'CHECK 11.1: FAIL - anon executed lookup_passport!';
   end if;
 
+  perform set_config('role', 'postgres', true);
+  if not has_function_privilege('anon', 'public.lookup_passport(text)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.lookup_passport(text)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.request_access(text, text[])', 'EXECUTE')
+     and not has_function_privilege('public', 'public.request_access(text, text[])', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.respond_to_consent(uuid, text, text[], int)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.respond_to_consent(uuid, text, text[], int)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.revoke_consent(uuid)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.revoke_consent(uuid)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.my_consent_status(uuid)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.my_consent_status(uuid)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.list_my_consented_customers()', 'EXECUTE')
+     and not has_function_privilege('public', 'public.list_my_consented_customers()', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.get_consented_customer(uuid)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.get_consented_customer(uuid)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.log_measurement_view(uuid, text)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.log_measurement_view(uuid, text)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.list_pending_requests()', 'EXECUTE')
+     and not has_function_privilege('public', 'public.list_pending_requests()', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.list_my_access()', 'EXECUTE')
+     and not has_function_privilege('public', 'public.list_my_access()', 'EXECUTE') then
+    v_check_count := v_check_count + 1;
+    raise notice 'CHECK %: PASS - has_function_privilege confirms anon and public cannot execute any Phase 4 RPC', v_check_count;
+  else
+    raise exception 'CHECK 11.2: FAIL - anon or public has EXECUTE privilege on a Phase 4 RPC!';
+  end if;
+
   -- ----------------------------------------------------------------------------
   -- CLEANUP
   -- ----------------------------------------------------------------------------

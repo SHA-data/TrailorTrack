@@ -62,7 +62,7 @@ export default async function TailorShopPage() {
             <UserCheck className="text-primary size-4 shrink-0" />
             <span className="text-foreground font-medium">{profile?.full_name || "Tailor"}</span>
             <span className="bg-accent/20 text-accent-700 dark:text-accent-400 rounded px-2 py-0.5 text-[11px] font-bold tracking-wider uppercase">
-              Verified Tailor
+              Tailor Account
             </span>
           </div>
           <div className="text-muted-foreground border-border/60 flex items-center gap-3 border-t pt-1 text-xs">

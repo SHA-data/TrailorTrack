@@ -121,7 +121,7 @@ export default async function CustomerDashboardPage() {
             </div>
             <p className="text-muted-foreground text-xs">
               {completionPoints === 100
-                ? "Your digital passport is 100% complete and ready for any Pakistani master tailor."
+                ? "Your digital passport is complete and ready for any participating tailor."
                 : totalMeasurements === 0
                   ? "Next step: Add your first Kameez or Shalwar measurement set."
                   : "Add family member profiles to manage household tailoring together."}

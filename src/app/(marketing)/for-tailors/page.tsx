@@ -112,7 +112,7 @@ export default function ForTailorsPage() {
             <div className="bg-card border-border space-y-2 rounded-2xl border p-5">
               <span className="text-accent font-serif text-xl font-bold">1. Scan QR</span>
               <p className="text-muted-foreground font-sans text-xs sm:text-sm">
-                Point any smartphone camera at customer passport. Instant verified measurements
+                Point any smartphone camera at a customer passport. Consent-based measurements
                 appear on screen.
               </p>
             </div>

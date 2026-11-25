@@ -189,7 +189,7 @@ export function CustomerOrdersClient({ activeOrders, pastOrders }: OrdersClientP
                       <span>{order.shop_phone}</span>
                     </a>
                   ) : (
-                    <span className="text-muted-foreground text-[11px]">TailorTrack Verified</span>
+                    <span className="text-muted-foreground text-[11px]">TailorTrack Order</span>
                   )}
 
                   <Button

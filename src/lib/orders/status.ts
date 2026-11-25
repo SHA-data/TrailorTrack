@@ -22,7 +22,7 @@ export const ORDER_STATUS_META: Record<OrderStatus, StatusMeta> = {
     status: "received",
     label: "Order Received",
     shortLabel: "Received",
-    description: "Order booked and fabric verified in shop diary",
+    description: "Order booked and recorded in shop diary",
     badgeVariant: "secondary",
     badgeClass: "bg-blue-500/10 text-blue-700 border-blue-200",
   },

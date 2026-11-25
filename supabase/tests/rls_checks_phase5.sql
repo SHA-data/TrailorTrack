@@ -605,6 +605,102 @@ begin
     raise exception 'CHECK D.6: FAIL - New order created after consent revocation!';
   end if;
 
+  -- D.7 Delivered order cannot change total_pkr, delivery_date, or decrease paid_pkr
+  v_exception_caught := false;
+  begin
+    perform public.change_order_price(v_order_id, 5000, 'Attempt price change on delivered');
+  exception when others then
+    v_exception_caught := true;
+  end;
+  if not v_exception_caught then
+    raise exception 'CHECK D.7a: FAIL - change_order_price succeeded on delivered order!';
+  end if;
+
+  v_exception_caught := false;
+  begin
+    perform public.reschedule_order(v_order_id, (current_date + 20), 'Attempt reschedule on delivered');
+  exception when others then
+    v_exception_caught := true;
+  end;
+  if not v_exception_caught then
+    raise exception 'CHECK D.7b: FAIL - reschedule_order succeeded on delivered order!';
+  end if;
+
+  perform set_config('role', 'postgres', true);
+  v_exception_caught := false;
+  begin
+    update public.orders set paid_pkr = 1000 where id = v_order_id;
+  exception when others then
+    v_exception_caught := true;
+  end;
+  if v_exception_caught then
+    v_check_count := v_check_count + 1;
+    raise notice 'CHECK %: PASS - Delivered order blocks price/date changes and paid_pkr decrease', v_check_count;
+  else
+    raise exception 'CHECK D.7c: FAIL - paid_pkr decrease succeeded on delivered order!';
+  end if;
+
+  -- D.8 Cancelled order is fully immutable (rejects status, price, date, and payment)
+  insert into public.consents (customer_id, shop_id, status, scopes, requested_scopes, expires_at)
+  values (v_customer_a_id, v_shop_id, 'active', array['measurements', 'orders'], array['measurements', 'orders'], now() + interval '30 days')
+  returning id into v_consent_a_id;
+
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claim.sub', v_tailor::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text, 'role', 'authenticated')::text, true);
+
+  v_order_id_2 := public.create_order(v_customer_a_id, null, (current_date + 10), 2500, 0, v_items);
+  perform public.update_order_status(v_order_id_2, 'cancelled', 'Customer requested cancel');
+
+  perform set_config('role', 'postgres', true);
+  update public.consents set status = 'revoked', revoked_at = now() where id = v_consent_a_id;
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claim.sub', v_tailor::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_tailor::text, 'role', 'authenticated')::text, true);
+
+  v_exception_caught := false;
+  begin
+    perform public.record_payment(v_order_id_2, 500);
+  exception when others then
+    v_exception_caught := true;
+  end;
+  if not v_exception_caught then
+    raise exception 'CHECK D.8a: FAIL - Payment recorded on cancelled order!';
+  end if;
+
+  v_exception_caught := false;
+  begin
+    perform public.update_order_status(v_order_id_2, 'received', 'Reopen cancelled');
+  exception when others then
+    v_exception_caught := true;
+  end;
+  if not v_exception_caught then
+    raise exception 'CHECK D.8b: FAIL - Status changed on cancelled order!';
+  end if;
+
+  v_exception_caught := false;
+  begin
+    perform public.change_order_price(v_order_id_2, 3000, 'Price change on cancelled');
+  exception when others then
+    v_exception_caught := true;
+  end;
+  if not v_exception_caught then
+    raise exception 'CHECK D.8c: FAIL - Price changed on cancelled order!';
+  end if;
+
+  v_exception_caught := false;
+  begin
+    perform public.reschedule_order(v_order_id_2, (current_date + 15), 'Reschedule cancelled');
+  exception when others then
+    v_exception_caught := true;
+  end;
+  if v_exception_caught then
+    v_check_count := v_check_count + 1;
+    raise notice 'CHECK %: PASS - Cancelled order is completely immutable (rejects payment, status, price, date)', v_check_count;
+  else
+    raise exception 'CHECK D.8d: FAIL - Reschedule succeeded on cancelled order!';
+  end if;
+
   -- ============================================================================
   -- DOMAIN E: Order Events Append-Only Audit Trail
   -- ============================================================================
@@ -815,6 +911,28 @@ begin
     raise notice 'CHECK %: PASS - anon cannot execute shop_dashboard_stats', v_check_count;
   else
     raise exception 'CHECK J.2: FAIL - anon executed shop_dashboard_stats!';
+  end if;
+
+  -- J.3 has_function_privilege verifies anon and public cannot execute any Phase 5 RPC
+  perform set_config('role', 'postgres', true);
+  if not has_function_privilege('anon', 'public.create_order(uuid, uuid, date, int, int, jsonb)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.create_order(uuid, uuid, date, int, int, jsonb)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.update_order_status(uuid, text, text)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.update_order_status(uuid, text, text)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.reschedule_order(uuid, date, text)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.reschedule_order(uuid, date, text)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.change_order_price(uuid, int, text)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.change_order_price(uuid, int, text)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.record_payment(uuid, int)', 'EXECUTE')
+     and not has_function_privilege('public', 'public.record_payment(uuid, int)', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.mark_notifications_read(uuid[])', 'EXECUTE')
+     and not has_function_privilege('public', 'public.mark_notifications_read(uuid[])', 'EXECUTE')
+     and not has_function_privilege('anon', 'public.shop_dashboard_stats()', 'EXECUTE')
+     and not has_function_privilege('public', 'public.shop_dashboard_stats()', 'EXECUTE') then
+    v_check_count := v_check_count + 1;
+    raise notice 'CHECK %: PASS - has_function_privilege confirms anon and public cannot execute any Phase 5 RPC', v_check_count;
+  else
+    raise exception 'CHECK J.3: FAIL - anon or public has EXECUTE privilege on a Phase 5 RPC!';
   end if;
 
   -- ----------------------------------------------------------------------------
