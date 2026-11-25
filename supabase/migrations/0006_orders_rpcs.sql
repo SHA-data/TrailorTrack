@@ -34,7 +34,7 @@ declare
   v_open_orders_count int;
   v_order_seq int;
   v_order_id uuid;
-  v_item record;
+  v_item jsonb;
   v_item_id uuid;
   v_garment_type text;
   v_mset_id uuid;
@@ -141,7 +141,7 @@ begin
 
   -- 11. Loop over items and create item rows + measurement snapshots
   for i in 0..(v_num_items - 1) loop
-    select (p_items->i) into v_item;
+    v_item := (p_items->i);
 
     v_garment_type := (v_item->>'garment_type');
     if v_garment_type not in ('kameez','shirt','shalwar','trouser','waistcoat','sherwani','coat') then
