@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { signOutAction } from "@/lib/auth/actions";
+import { DataControlCard } from "@/components/shared/data-control-card";
 import { ShopEditorForm } from "./shop-editor-form";
 
 export const instant = false;
@@ -79,6 +80,9 @@ export default async function TailorShopPage() {
         initialAddress={shop?.address || ""}
         initialPhone={shop?.phone || profile?.phone || ""}
       />
+
+      {/* Your Data: Export & Account Deletion */}
+      {user.email && <DataControlCard role="tailor" userEmail={user.email} />}
 
       {/* Sign Out Card */}
       <Card className="border-destructive/20 bg-destructive/5">

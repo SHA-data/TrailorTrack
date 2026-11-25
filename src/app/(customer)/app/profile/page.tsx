@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { signOutAction } from "@/lib/auth/actions";
+import { DataControlCard } from "@/components/shared/data-control-card";
 import { ProfileEditorForm } from "./profile-editor-form";
 
 export const instant = false;
@@ -82,6 +83,9 @@ export default async function CustomerProfilePage() {
         initialFitCategory={customer?.fit_category || "men"}
         initialPreferredUnit={customer?.preferred_unit || "in"}
       />
+
+      {/* Your Data: Export & Account Deletion */}
+      {user.email && <DataControlCard role="customer" userEmail={user.email} />}
 
       {/* Sign Out Section */}
       <Card className="border-destructive/30 bg-card shadow-xs">

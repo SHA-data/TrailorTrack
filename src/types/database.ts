@@ -6,7 +6,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type UserRole = "customer" | "tailor";
 export type ConsentStatus = "pending" | "active" | "revoked" | "declined";
-export type ConsentScope = "measurements" | "orders" | "saved_looks";
+export type ConsentScope = "measurements" | "orders";
 export type AccessAction = "viewed_profile" | "viewed_measurements" | "viewed_family";
 
 export type FitCategory = "men" | "women" | "boys" | "girls";
@@ -371,7 +371,7 @@ export interface Database {
       orders: {
         Row: {
           id: string;
-          shop_id: string;
+          shop_id: string | null;
           customer_id: string;
           family_member_id: string | null;
           person_label: string;
@@ -391,7 +391,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          shop_id: string;
+          shop_id?: string | null;
           customer_id: string;
           family_member_id?: string | null;
           person_label: string;
@@ -411,7 +411,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          shop_id?: string;
+          shop_id?: string | null;
           customer_id?: string;
           family_member_id?: string | null;
           person_label?: string;
@@ -536,7 +536,7 @@ export interface Database {
           from_value: string | null;
           to_value: string | null;
           note: string | null;
-          actor_user_id: string;
+          actor_user_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -546,7 +546,7 @@ export interface Database {
           from_value?: string | null;
           to_value?: string | null;
           note?: string | null;
-          actor_user_id: string;
+          actor_user_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -556,7 +556,7 @@ export interface Database {
           from_value?: string | null;
           to_value?: string | null;
           note?: string | null;
-          actor_user_id?: string;
+          actor_user_id?: string | null;
           created_at?: string;
         };
         Relationships: [
@@ -814,6 +814,14 @@ export interface Database {
       shop_dashboard_stats: {
         Args: Record<PropertyKey, never>;
         Returns: ShopDashboardStats;
+      };
+      delete_my_account: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
+      export_my_data: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
       };
     };
     Enums: {
