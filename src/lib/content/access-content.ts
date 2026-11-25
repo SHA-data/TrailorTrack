@@ -18,7 +18,7 @@ export const accessContent = {
   access: {
     title: "Access & Security",
     subtitle:
-      "Control which tailors can view your measurements and monitor their activity in real time.",
+      "Control which tailors can view your measurements and monitor their activity (updates about every 20 seconds).",
     tabs: {
       requests: "Requests",
       active: "Active",
@@ -35,7 +35,6 @@ export const accessContent = {
     scopes: {
       measurements: "Measurements & Family (View body measurements & family sizes)",
       orders: "Orders (Create & update tailoring orders)",
-      saved_looks: "Saved Looks (View saved styles & fabric preferences)",
     },
     durations: {
       7: "7 Days (Quick order)",

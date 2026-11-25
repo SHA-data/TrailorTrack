@@ -60,7 +60,7 @@ export function ShopEditorForm({
 
           <div className="space-y-1.5">
             <Label htmlFor="shopName" className="text-foreground text-xs font-semibold">
-              Shop / Studio Name
+              Shop Name
             </Label>
             <Input
               id="shopName"

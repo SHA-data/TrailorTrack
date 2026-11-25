@@ -6,4 +6,3 @@ The customer digital tailoring passport application:
 - Body measurement profiles & revision history
 - Family member profiles
 - Order tracking and history
-- 2D/3D Design Studio and saved looks

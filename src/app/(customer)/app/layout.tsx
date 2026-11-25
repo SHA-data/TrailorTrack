@@ -7,7 +7,6 @@ import {
   Ruler,
   Users,
   ShoppingBag,
-  Palette,
   User,
   ShieldCheck,
   QrCode,
@@ -61,7 +60,6 @@ export default async function CustomerLayout({ children }: CustomerLayoutProps) 
     { label: "Access & Security", href: "/app/access", icon: KeyRound, hasBadge: true },
     { label: "Family", href: "/app/family", icon: Users },
     { label: "Orders", href: "/app/orders", icon: ShoppingBag },
-    { label: "Design Studio", href: "/app/studio", icon: Palette },
     { label: "Profile", href: "/app/profile", icon: User },
   ];
 

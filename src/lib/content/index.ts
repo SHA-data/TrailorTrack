@@ -24,7 +24,6 @@ export const content = {
   nav: {
     howItWorks: "How It Works",
     features: "Features",
-    tryon: "Design Studio",
     forTailors: "For Tailors",
     faq: "FAQ",
     login: "Log In",
@@ -110,10 +109,10 @@ export const content = {
       },
       {
         number: "03",
-        title: "Preview & Track with Confidence",
+        title: "Approve & Track Orders",
         description:
-          "Preview garment silhouettes and fabric color pairings in our Design Studio. Receive real-time status updates as your garment moves from cutting to stitching to trial ready.",
-        detail: "Live order tracking sent directly to your account",
+          "Review the shop's access request, approve what they can see, and track your garment as it moves from received to cutting, stitching, ready, and delivered.",
+        detail: "Status updates appear in your order tracker and inbox",
       },
     ],
   },
@@ -146,10 +145,10 @@ export const content = {
       },
       {
         id: "design-archive",
-        title: "Saved Looks & Style Archive",
+        title: "Access Activity Log",
         description:
-          "Store your favorite collar styles, cuff designs, placket stitch preferences, and photos of fabrics you love for instant reference.",
-        tag: "Inspiration",
+          "See when a tailor shop viewed your profile or measurements, review active permissions, and revoke access whenever you choose.",
+        tag: "Audit Trail",
       },
       {
         id: "consent-control",
@@ -166,29 +165,6 @@ export const content = {
         tag: "Record Keeping",
       },
     ],
-  },
-  tryon: {
-    badge: "Design Studio Preview",
-    title: "Preview Before the First Cut Is Made",
-    subtitle:
-      "Eliminate fitting surprises with our interactive garment visualization engine. Experiment with fabrics in 2D today, with live 3D try-on coming soon.",
-    tabs: {
-      twoD: "2D Studio Preview",
-      threeD: "Live 3D Try-On",
-    },
-    twoD: {
-      heading: "Interactive Garment & Fabric Visualizer",
-      description:
-        "Select rich South Asian fabric shades and preview how collar cuts, plackets, and silhouettes coordinate before handing your cloth to the tailor.",
-      swatchLabel: "Choose Fabric Tone:",
-    },
-    threeD: {
-      heading: "Real-Time 3D Mesh Try-On",
-      description:
-        "Using lightweight browser pose estimation, preview garments draped directly over your camera feed with real-time cloth physics. Zero hardware required.",
-      badge: "Coming soon",
-      scanningNotice: "Camera Pose Landmarker • Real-Time Mesh Drape • Browser-Native",
-    },
   },
   privacy: {
     badge: "Data Sovereignty",
@@ -222,10 +198,10 @@ export const content = {
     subtitle:
       "Say goodbye to messy paper ledgers, lost measurement cards, and awkward customer disputes. Serve modern clients with a swift QR scan.",
     bulletPoints: [
-      "Zero app installation required for your shop",
-      "Cut intake time from 15 minutes down to 30 seconds",
-      "Eliminate disputes over collar cuts and length specs",
-      "Keep customers returning with transparent digital order tracking",
+      "No app installation required for your shop",
+      "Look up a customer's saved measurements with a QR scan",
+      "Keep clear written garment specs and frozen snapshots per order",
+      "Share order status updates and delivery dates with customers",
     ],
     cta: "Learn More For Tailors",
   },
@@ -253,7 +229,7 @@ export const content = {
       {
         question: "Is TailorTrack free for customers?",
         answer:
-          "Yes. Creating and managing your digital tailoring passport, storing measurements, and sharing them via QR code is 100% free for individual customers.",
+          "Yes. Creating and managing your digital tailoring passport, storing measurements, and sharing them via QR code is free for individual customers.",
       },
       {
         question: "What garments are supported?",
@@ -273,12 +249,12 @@ export const content = {
     ],
   },
   finalCta: {
-    headline: "Step into the Future of Bespoke Tailoring.",
+    headline: "Keep Your Tailoring Passport Ready.",
     subheading:
-      "Join thousands of Pakistani fashion lovers and master tailors preserving the heritage of bespoke craftsmanship with modern precision.",
+      "Store your measurements, manage family profiles, and track your tailoring orders in one place.",
     cta: "Create Your Free Passport",
     secondaryCta: "Explore Partner Tailors",
-    guarantee: "100% Free for Customers • Takes Less Than 2 Minutes",
+    guarantee: "Free for Customers • Takes Less Than 2 Minutes",
   },
   footer: {
     description:
@@ -289,7 +265,6 @@ export const content = {
         links: [
           { label: "How It Works", href: "/#how-it-works" },
           { label: "Features", href: "/#features" },
-          { label: "Design Studio", href: "/#try-on" },
           { label: "For Tailors", href: "/for-tailors" },
           { label: "FAQ", href: "/#faq" },
         ],

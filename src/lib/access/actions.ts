@@ -5,7 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 
 const scopesSchema = z
-  .array(z.enum(["measurements", "orders", "saved_looks"]))
+  .array(z.enum(["measurements", "orders"]))
   .min(1, "Select at least one permission");
 
 const durationSchema = z.union([z.literal(7), z.literal(30), z.literal(90), z.literal(365)]);

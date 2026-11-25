@@ -9,7 +9,6 @@ export function Navbar() {
   const navLinks = [
     { label: content.nav.howItWorks, href: "/#how-it-works" },
     { label: content.nav.features, href: "/#features" },
-    { label: content.nav.tryon, href: "/#try-on" },
     { label: content.nav.forTailors, href: "/for-tailors" },
     { label: content.nav.faq, href: "/#faq" },
   ];

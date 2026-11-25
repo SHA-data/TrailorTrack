@@ -4,7 +4,6 @@ import { HeroSection } from "@/components/marketing/hero-section";
 import { ProblemStrip } from "@/components/marketing/problem-strip";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { FeaturesGrid } from "@/components/marketing/features-grid";
-import { TryOnShowcase } from "@/components/marketing/tryon-showcase";
 import { PrivacySection } from "@/components/marketing/privacy-section";
 import { TailorTeaser } from "@/components/marketing/tailor-teaser";
 import { FAQSection } from "@/components/marketing/faq-section";
@@ -17,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "TailorTrack — Digital Tailoring Passport for Pakistan",
     description:
-      "A customer-owned digital tailoring passport. Keep your measurements, preview designs in the studio, and grant consent-based QR access to any master tailor.",
+      "A customer-owned digital tailoring passport. Keep your measurements, manage family profiles, grant consent-based QR access to tailors, and track orders.",
     type: "website",
     locale: "en_PK",
     siteName: "TailorTrack",
@@ -39,10 +38,7 @@ export default function LandingPage() {
       {/* 5. Features Grid (6 Cards) */}
       <FeaturesGrid />
 
-      {/* 6. Try-on Showcase (2D Studio & 3D Live) */}
-      <TryOnShowcase />
-
-      {/* 7. Privacy & Consent Control */}
+      {/* 6. Privacy & Consent Control */}
       <PrivacySection />
 
       {/* 8. For Tailors Teaser */}

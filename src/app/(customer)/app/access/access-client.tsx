@@ -119,7 +119,10 @@ export function AccessClient({
 
   const handleOpenApprove = (req: PendingRequestItem) => {
     setApprovingRequest(req);
-    setSelectedScopes([...req.requested_scopes]);
+    const allowedScopes = req.requested_scopes.filter(
+      (s): s is "measurements" | "orders" => s === "measurements" || s === "orders"
+    );
+    setSelectedScopes(allowedScopes.length > 0 ? allowedScopes : ["measurements"]);
     setDurationDays(30);
   };
 
@@ -479,7 +482,12 @@ export function AccessClient({
                 <label className="text-foreground block text-xs font-semibold">
                   Permissions to Grant:
                 </label>
-                {approvingRequest.requested_scopes.map((scope) => {
+                {approvingRequest.requested_scopes
+                  .filter(
+                    (scope): scope is "measurements" | "orders" =>
+                      scope === "measurements" || scope === "orders"
+                  )
+                  .map((scope) => {
                   const isChecked = selectedScopes.includes(scope);
                   return (
                     <label

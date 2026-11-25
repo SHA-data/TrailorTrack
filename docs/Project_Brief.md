@@ -3,11 +3,9 @@
 ## What it is
 
 A customer-owned "digital tailoring passport" for Pakistan. Customers keep their body
-measurements, style preferences, saved designs and order history in one account, shown
-as a QR code. Any participating tailor scans it (with the customer's consent), views
-measurements, creates orders and updates order status. Customers can also preview
-garments in a Design Studio, in 2D (fabric and style mockups) and in real-time 3D
-(live camera try-on).
+measurements, family profiles, and order history in one account, shown as a QR code.
+Any participating tailor scans it (with the customer's consent), views measurements,
+creates orders, and updates order status.
 
 ## Product direction
 
@@ -16,22 +14,21 @@ garments in a Design Studio, in 2D (fabric and style mockups) and in real-time 3
 
 ## Users and roles
 
-- customer: owns profile, measurements, family profiles, orders, saved looks
+- customer: owns profile, measurements, family profiles, orders, consent controls
 - tailor: belongs to a shop, scans QR, requests/uses consent, creates orders,
   updates status
 - (admin is out of scope for v1)
 
 ## Core data model (high level)
 
-profiles (user, role), customers, family_members, measurements (versioned history),
+profiles (user, role), customers, family_members, measurement_sets (versioned history),
 tailor_shops, consents (customer <-> shop, with scope + expiry + revoked flag),
-orders, order_status_history, saved_looks, fabrics, notifications.
+access_log, orders, order_items, order_item_measurements, order_events, notifications.
 
 ## Tech stack (free and open source only)
 
 Next.js App Router + TypeScript, Tailwind CSS, shadcn/ui, Supabase (Postgres, Auth,
-Storage, RLS), Three.js via React Three Fiber, MediaPipe Pose Landmarker (runs in the
-browser), qrcode, Resend (email).
+RLS), qrcode, qr-scanner, html-to-image.
 
 ## Design direction
 
